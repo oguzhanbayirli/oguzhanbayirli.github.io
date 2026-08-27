@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShiftSheet — Employee Timesheet &amp; Shift Schedule for Google Sheets</title>
+<meta name="description" content="Build a month's shift schedule in Google Sheets, catch double bookings and rest-time breaches before they happen, and print a signed timesheet for every person.">
+<link rel="icon" type="image/png" href="icon-128.png">
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #5f6368;
+    --line: #e3e6ea;
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --bg-soft: #f7f9fc;
+    --ok: #137333;
+    --warn: #b06000;
+    --err: #c5221f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+  a { color: var(--blue); }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); z-index: 10;
+  }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; text-decoration: none; color: var(--ink); }
+  .brand span { color: var(--blue); }
+  nav a {
+    margin-left: 20px; text-decoration: none; color: var(--muted);
+    font-size: 14px;
+  }
+  nav a:hover { color: var(--ink); }
+
+  .hero { padding: 68px 0 56px; }
+  h1 {
+    font-size: 40px; line-height: 1.18; letter-spacing: -.7px;
+    margin: 0 0 16px; max-width: 720px;
+  }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta {
+    display: inline-block; background: var(--blue); color: #fff;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 24px; border-radius: 6px;
+  }
+  .cta:hover { background: var(--blue-dark); }
+  .cta-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; letter-spacing: -.3px; margin: 0 0 8px; }
+  .section-lede { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; background: #fff;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li {
+    padding: 13px 0 13px 30px; border-bottom: 1px solid var(--line);
+    position: relative; font-size: 15px;
+  }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 13px;
+    color: var(--ok); font-weight: 700;
+  }
+  .checks b { font-weight: 600; }
+  .checks span { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  td.yes { color: var(--ok); font-weight: 600; }
+  td.no  { color: var(--muted); }
+
+  .price-row { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-top: 20px; }
+  @media (max-width: 720px) { .price-row { grid-template-columns: 1fr; } }
+  .price {
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
+  }
+  .price.paid { border-color: var(--blue); box-shadow: 0 1px 12px rgba(26,115,232,.10); }
+  .price .tier { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .price .amount { font-size: 30px; font-weight: 700; margin: 6px 0 4px; }
+  .price .per { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .price ul { padding-left: 18px; margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+  .price li { margin-bottom: 5px; }
+
+  details {
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 14px; }
+
+  .privacy-box {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 22px;
+  }
+  .privacy-box p { margin: 0 0 10px; font-size: 15px; }
+  .privacy-box p:last-child { margin-bottom: 0; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 30px 0 50px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--muted); margin-right: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">Shift<span>Sheet</span></a>
+    <nav>
+      <a href="#what">What it does</a>
+      <a href="#checks">Checks</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Employee Timesheet &amp; Shift Schedule, inside the spreadsheet you already use.</h1>
+    <p class="lede">
+      Build a month's shift grid in Google Sheets. Catch the double bookings, rest-time
+      breaches and overtime a spreadsheet would let straight through. Print a signed
+      timesheet for every person.
+    </p>
+    <a class="cta" href="#install">Install from Google Workspace Marketplace</a>
+    <p class="cta-note">Free for teams up to 8 people. No account to create. Nothing leaves your spreadsheet.</p>
+  </div>
+
+  <section id="what">
+    <h2>What it does</h2>
+    <p class="section-lede">
+      Four steps, in the order you actually do the job.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>1 · Your people, your shifts</h3>
+        <p>Two plain sheets you fill in yourself: who works for you, and what your shifts
+           are. Define <em>Morning 07:00–15:00</em> once and type <code>M</code> from then on.</p>
+      </div>
+      <div class="card">
+        <h3>2 · Build the month</h3>
+        <p>One click makes the grid — every day of the month, weekends shaded, a colour
+           for each shift, and a dropdown so nobody mistypes a code.</p>
+      </div>
+      <div class="card">
+        <h3>3 · Check it before you publish it</h3>
+        <p>Every mistake a spreadsheet cannot see: the same person twice, four hours of
+           sleep between shifts, a quiet slide into overtime, eleven days without a break.</p>
+      </div>
+      <div class="card">
+        <h3>4 · Hours and timesheets</h3>
+        <p>Hours per person, overtime calculated weekly rather than monthly, and a
+           printable timesheet with a signature line at the bottom.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="checks">
+    <h2>The checks</h2>
+    <p class="section-lede">
+      These run against the whole month in one pass. Findings go to their own sheet —
+      your grid is never edited.
+    </p>
+    <ul class="checks">
+      <li><b>Double booked</b> — <span>the same person on two shifts that run at the same time, including a shift that runs past midnight into the next day's.</span></li>
+      <li><b>Not enough rest</b> — <span>less than your minimum gap between clocking off and clocking back on. Overnight shifts are measured correctly, not by calendar day.</span></li>
+      <li><b>Over weekly hours</b> — <span>against that person's own limit if they have one, otherwise your default.</span></li>
+      <li><b>Too many days in a row</b> — <span>runs of consecutive working days with no day off.</span></li>
+      <li><b>Unknown shift code</b> — <span>anything typed into the grid that is not on your Shifts sheet.</span></li>
+    </ul>
+  </section>
+
+  <section id="safety">
+    <h2>It will not eat your schedule</h2>
+    <p class="section-lede">
+      Every rule below exists because a scheduling add-on somewhere broke it.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Old months are kept, not overwritten</h3>
+        <p>Building September does not erase August. The previous grid is renamed to
+           <code>Schedule 2026-08</code> and left in the spreadsheet.</p>
+      </div>
+      <div class="card">
+        <h3>Your cells stay your cells</h3>
+        <p>After setup, nothing writes to Staff, Shifts or Schedule. Reports are written
+           to their own sheets. Format the grid however you like — it will not be reverted.</p>
+      </div>
+      <div class="card">
+        <h3>Shift colours are yours</h3>
+        <p>Colours are read from your Shifts sheet. As many as you have shifts. No
+           fixed palette to run out of.</p>
+      </div>
+      <div class="card">
+        <h3>Overtime is weekly, not monthly</h3>
+        <p>Fifty hours one week and thirty the next is ten hours of overtime, not zero.
+           Averaging across the month quietly underpays people.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Pricing</h2>
+    <p class="section-lede">
+      The free version is a working product, not a trial. It does not expire.
+    </p>
+
+    <div class="price-row">
+      <div class="price">
+        <div class="tier">Free</div>
+        <div class="amount">$0</div>
+        <ul>
+          <li>Up to 8 people</li>
+          <li>Month grid and shift library</li>
+          <li>All five checks</li>
+          <li>Hours per person</li>
+          <li>Timesheet for one person at a time</li>
+        </ul>
+      </div>
+      <div class="price paid">
+        <div class="tier">Paid</div>
+        <div class="amount">$12 <span class="per">one payment</span></div>
+        <ul>
+          <li>Unlimited people</li>
+          <li>Pay rates, overtime pay and labour cost</li>
+          <li>Every timesheet in one click</li>
+          <li>Works in every spreadsheet on your account</li>
+        </ul>
+      </div>
+    </div>
+
+    <table>
+      <tr><th></th><th>Free</th><th>Paid</th></tr>
+      <tr><td>People</td><td class="no">up to 8</td><td class="yes">unlimited</td></tr>
+      <tr><td>Schedule, checks, hour totals</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+      <tr><td>Timesheet for one person</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+      <tr><td>Pay rates, overtime pay, labour cost</td><td class="no">—</td><td class="yes">yes</td></tr>
+      <tr><td>Every timesheet at once</td><td class="no">—</td><td class="yes">yes</td></tr>
+    </table>
+  </section>
+
+  <section id="privacy">
+    <h2>Privacy, in one paragraph</h2>
+    <div class="privacy-box">
+      <p><b>There is no server.</b> ShiftSheet runs inside Google Sheets, on Google's own
+         infrastructure. Your staff names, hours and pay rates never travel to us, because
+         there is nowhere for them to travel to.</p>
+      <p>The add-on can read and write only the one spreadsheet you open it in — that is
+         what the <code>spreadsheets.currentonly</code> permission means. It cannot see your
+         other files, your Drive, your email or your calendar.</p>
+      <p>The only thing that ever leaves your browser is a licence key, sent to our payment
+         provider to confirm it is valid. No analytics, no tracking, no third parties.</p>
+      <p><a href="privacy.html">Full privacy policy</a> · <a href="terms.html">Terms of service</a></p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>Questions</h2>
+
+    <details>
+      <summary>Does it change my spreadsheet?</summary>
+      <p>It creates sheets — Staff, Shifts, Schedule, and the report sheets. After that it
+         only writes to the report sheets. Your grid, your formatting and your notes are
+         left alone.</p>
+    </details>
+
+    <details>
+      <summary>Can two people work two shifts in one day?</summary>
+      <p>Yes. Put both codes in the cell separated by a slash: <code>M/A</code>. Both appear
+         as separate lines on the timesheet, and the checker will tell you if they overlap.</p>
+    </details>
+
+    <details>
+      <summary>Does it handle night shifts that run past midnight?</summary>
+      <p>Yes. A shift from 23:00 to 07:00 is measured as eight hours ending the next
+         morning, so the rest-gap check knows that a 07:00 start the following day means
+         zero rest.</p>
+    </details>
+
+    <details>
+      <summary>Does it sync to Google Calendar?</summary>
+      <p>Not yet. Calendar access is a broader permission than this add-on asks for today.
+         It is the first thing on the list once enough people ask for it.</p>
+    </details>
+
+    <details>
+      <summary>What happens to my data if I stop using it?</summary>
+      <p>Nothing leaves. Uninstall the add-on and every sheet it made stays in your
+         spreadsheet, readable as an ordinary spreadsheet, forever.</p>
+    </details>
+
+    <details>
+      <summary>Is the free version a trial?</summary>
+      <p>No. It does not expire and it is not limited by time. Up to eight people, every
+         check, hour totals — free, indefinitely.</p>
+    </details>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <p class="section-lede">
+      Open a Google Sheet, then <b>Extensions ▸ Add-ons ▸ Get add-ons</b> and search for
+      <b>Employee Timesheet &amp; Shift Schedule</b>.
+    </p>
+    <a class="cta" href="#">Google Workspace Marketplace</a>
+    <p class="cta-note">Link goes live when the listing is approved.</p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <a href="privacy.html">Privacy policy</a>
+    <a href="terms.html">Terms of service</a>
+    <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>
+    <p style="margin-top:14px">ShiftSheet is an independent add-on. Google Sheets and Google Workspace are trademarks of Google LLC.</p>
+  </div>
+</footer>
+
+</body>
+</html>
