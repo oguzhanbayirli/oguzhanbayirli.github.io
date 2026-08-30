@@ -49,7 +49,7 @@
 <div class="wrap">
 
 <h1>Privacy Policy</h1>
-<p class="updated">Last updated 29 August 2026 · Applies to the <b>Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
+<p class="updated">Last updated 29 August 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
 
 <div class="callout">
   <p><b>The short version.</b> This add-on has no server. It runs inside Google Sheets on
@@ -98,18 +98,36 @@
   Google, not by us.
 </p>
 
+<p>
+  The only <b>Google user data</b> the add-on accesses is the content of the single
+  spreadsheet you have open at the time: the staff names, shift codes, hours and rule
+  settings you type into it. That data is read in order to build the schedule and run
+  the checks, it is written back to the same spreadsheet, and it is used for nothing
+  else. It is never sent to us, never stored outside your own Google Account, and never
+  shared with anyone. We access, use, store and share no other Google user data.
+</p>
+
 <h2>What we collect</h2>
 <p><b>We do not collect, receive, store or transmit your spreadsheet content.</b> We
    operate no servers, no database, and no analytics.</p>
 
-<p>The add-on saves two small pieces of information using Google's own storage service
-   (<code>PropertiesService</code>), which keeps them inside your Google Account and your
-   own document. We have no access to either:</p>
+<p>The add-on saves six small pieces of information using Google's own storage service
+   (<code>PropertiesService</code>), which keeps them inside your Google Account and the
+   document you are working in. We cannot read any of them. Only one of the six is ever
+   sent anywhere, and that is the licence key, described in the next section:</p>
 <ul>
   <li><b>Your rule settings</b> — maximum weekly hours, minimum rest, overtime threshold
-      and similar. Stored in the document you are working in.</li>
+      and similar. Stored in the document.</li>
+  <li><b>Which month the schedule covers</b>, so the reports know what to add up.
+      Stored in the document.</li>
+  <li><b>Which sheets the add-on created itself</b>, so that it never overwrites a sheet
+      you made. Stored in the document.</li>
   <li><b>Your licence key</b>, if you buy the paid version. Stored against your Google
       Account so that one purchase unlocks every spreadsheet you use.</li>
+  <li><b>How many schedules you have finished</b>, counted so the add-on can ask once
+      whether you would leave a review. Stored against your Google Account.</li>
+  <li><b>Whether that review question has already been answered</b>, so it is never
+      asked a second time. Stored against your Google Account.</li>
 </ul>
 
 <h2>The one outbound request</h2>
