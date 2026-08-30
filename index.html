@@ -197,12 +197,13 @@
       your grid is never edited.
     </p>
     <ul class="checks">
-      <li><b>Double booked</b> — <span>the same person on two shifts that run at the same time, including a shift that runs past midnight into the next day's.</span></li>
+      <li><b>Overlapping shifts</b> — <span>two codes in the same cell whose hours run into each other, like <code>M/H</code>.</span></li>
+      <li><b>Double booked</b> — <span>a shift that starts before the previous one has finished, including one that runs past midnight into the next day's.</span></li>
       <li><b>Not enough rest</b> — <span>less than your minimum gap between clocking off and clocking back on. Overnight shifts are measured correctly, not by calendar day.</span></li>
       <li><b>Over weekly hours</b> — <span>against that person's own limit if they have one, otherwise your default.</span></li>
       <li><b>Too many days in a row</b> — <span>runs of consecutive working days with no day off.</span></li>
       <li><b>Unknown shift code</b> — <span>anything typed into the grid that is not on your Shifts sheet.</span></li>
-      <li><b>Unknown name</b> — <span>somebody scheduled in the grid who has no row on your Staff sheet, so no pay rate or hour limit is applied to them.</span></li>
+      <li><b>Not on Staff sheet</b> — <span>somebody scheduled in the grid who has no row on your Staff sheet, so no pay rate or hour limit is applied to them.</span></li>
     </ul>
   </section>
 
@@ -249,7 +250,7 @@
         <ul>
           <li>Up to 8 people</li>
           <li>Month grid and shift library</li>
-          <li>All six checks</li>
+          <li>All seven checks</li>
           <li>Hours per person</li>
           <li>Timesheet for one person at a time</li>
         </ul>
