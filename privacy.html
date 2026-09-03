@@ -49,14 +49,14 @@
 <div class="wrap">
 
 <h1>Privacy Policy</h1>
-<p class="updated">Last updated 30 August 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
+<p class="updated">Last updated 3 September 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
 
 <div class="callout">
   <p><b>The short version.</b> This add-on has no server. It runs inside Google Sheets on
   Google's own infrastructure. We do not receive, store or see your spreadsheet, your
-  staff names, their hours or their pay. What leaves your browser is your licence key,
-  together with an anonymous account identifier Google generates for the add-on, sent to
-  our payment provider to check the licence is valid. Both are described in full below.</p>
+  staff names, their hours or their pay. The add-on itself makes no network calls at all:
+  nothing is sent to us, and nothing is sent to any third party. This is described in
+  full below.</p>
 </div>
 
 <h2>Who we are</h2>
@@ -66,9 +66,8 @@
 </p>
 
 <h2>What the add-on can access</h2>
-<p>The add-on requests three permissions from Google. One is classed by Google as
-   non-sensitive and two are classed as sensitive, which is why the add-on goes through
-   Google's OAuth verification review before publication. Each exists for one specific job:</p>
+<p>The add-on requests one permission from Google, and Google classes it as
+   non-sensitive. It exists for one job:</p>
 
 <table>
   <tr><th>Permission</th><th>Google classification</th><th>What it allows</th><th>Why it is needed</th></tr>
@@ -78,19 +77,13 @@
     <td>Read and write <b>only the single spreadsheet you have open</b> while the add-on is running.</td>
     <td>To build the schedule grid and write the report sheets.</td>
   </tr>
-  <tr>
-    <td><code>script.container.ui</code></td>
-    <td>Sensitive</td>
-    <td>Display the add-on's menu, side panel, help dialog and message boxes inside Google Sheets.</td>
-    <td>To show the add-on's interface. Without it there is no way to open or use the add-on.</td>
-  </tr>
-  <tr>
-    <td><code>script.external_request</code></td>
-    <td>Sensitive</td>
-    <td>Make an outbound network request.</td>
-    <td>Used for exactly one thing: checking a licence key. See below.</td>
-  </tr>
 </table>
+
+<p>
+  Because that one permission is non-sensitive, the "Google hasn't verified this app"
+  screen should not appear when you open your copy. If you do see it, click
+  <b>Advanced</b>, then <b>Go to ShiftSheet (unsafe)</b>, then <b>Allow</b>.
+</p>
 
 <p>
   Because the spreadsheet permission is <code>currentonly</code>, the add-on
@@ -112,10 +105,10 @@
 <p><b>We do not collect, receive, store or transmit your spreadsheet content.</b> We
    operate no servers, no database, and no analytics.</p>
 
-<p>The add-on saves six small pieces of information using Google's own storage service
+<p>The add-on saves five small pieces of information using Google's own storage service
    (<code>PropertiesService</code>), which keeps them inside your Google Account and the
-   document you are working in. We cannot read any of them. Only one of the six is ever
-   sent anywhere, and that is the licence key, described in the next section:</p>
+   document you are working in. We cannot read any of them, and none of them is ever
+   sent anywhere:</p>
 <ul>
   <li><b>Your rule settings</b> — maximum weekly hours, minimum rest, overtime threshold
       and similar. Stored in the document.</li>
@@ -123,28 +116,22 @@
       Stored in the document.</li>
   <li><b>Which sheets the add-on created itself</b>, so that it never overwrites a sheet
       you made. Stored in the document.</li>
-  <li><b>Your licence key</b>, if you buy the paid version. Stored against your Google
-      Account so that one purchase unlocks every spreadsheet you use.</li>
   <li><b>How many schedules you have finished</b>, counted so the add-on can ask once
       whether you would leave a review. Stored against your Google Account.</li>
   <li><b>Whether that review question has already been answered</b>, so it is never
       asked a second time. Stored against your Google Account.</li>
 </ul>
 
-<h2>The one outbound request</h2>
+<h2>Outbound requests: none</h2>
 <p>
-  If you enter a licence key, the add-on sends that key, together with a rotating,
-  Google-generated identifier for your account that contains neither your name nor
-  your email address, to our payment provider
-  <b>Polar Software Inc.</b> (<code>api.polar.sh</code> —
-  <a href="https://polar.sh/legal/privacy" rel="noopener">privacy policy</a>),
-  the company that sold you the licence, so that it can confirm the key is genuine.
-  The check repeats about once a day to confirm the licence is still active. This
-  request contains no spreadsheet content, no staff names, no hours, no pay data,
-  and no email address.
+  The add-on makes no network calls. It contacts no server of ours, because we run
+  none, and it contacts no third party either. Nothing is sent when you install it,
+  nothing is sent while you use it, and nothing is sent when you buy the paid version.
 </p>
 <p>
-  If you never enter a licence key, the add-on makes no outbound requests at all.
+  The paid version is a separate copy of the template, so there is no key to enter and
+  no check to run. Whether a copy is the free or the paid one is decided by a line in
+  its own code, inside your own Drive.
 </p>
 
 <h2>Google's Limited Use requirements</h2>
@@ -161,16 +148,8 @@
     not sell it; and no humans read it, because it never reaches us in the first place.
   </p>
   <p>
-    The one exception is the licence check described above. When you activate a paid
-    licence, a label derived from a Google-generated identifier for your account
-    (<code>Session.getTemporaryActiveUserKey()</code>, which Google rotates periodically
-    and which contains neither your name nor your email address) is sent to Polar
-    Software Inc. together with your licence key. It is sent for one purpose only: so
-    that the purchase you made is recognised in every spreadsheet you open. That is a
-    transfer made to provide a user-facing feature you chose to use, with your consent,
-    and it is the only Google-derived information that ever leaves your browser. It is
-    never used for advertising, never sold, never passed to anyone else, and no human
-    reads it.
+    There is no exception to this. No Google user data, and nothing derived from it,
+    is transferred anywhere by the add-on, because the add-on makes no network calls.
   </p>
 </div>
 
@@ -181,8 +160,6 @@
 <ul>
   <li>To remove your saved rule settings, delete the sheets the add-on created, or delete
       the spreadsheet itself.</li>
-  <li>To remove your stored licence key, open the add-on's side panel and choose
-      <b>Remove licence from this account</b>.</li>
   <li>To revoke the add-on's access entirely, uninstall it, or visit your
       <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account permissions</a>.</li>
   <li>Everything the add-on wrote into your spreadsheet stays there afterwards as ordinary
