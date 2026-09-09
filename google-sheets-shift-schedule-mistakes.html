@@ -3,210 +3,467 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy Policy — ShiftSheet</title>
-<meta name="description" content="Privacy policy for the ShiftSheet Employee Timesheet & Shift Schedule Google Sheets add-on.">
+<title>Seven mistakes in a Google Sheets shift schedule, and the formulas that find them</title>
 <link rel="icon" type="image/png" href="icon-128.png">
 <style>
-  :root { --ink:#1f2328; --muted:#5f6368; --line:#e3e6ea; --blue:#1a73e8; --bg-soft:#f7f9fc; }
+  :root {
+    --ink: #1f2328;
+    --muted: #5f6368;
+    --line: #e3e6ea;
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --bg-soft: #f7f9fc;
+    --ok: #137333;
+    --warn: #b06000;
+    --err: #c5221f;
+    --radius: 10px;
+  }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
-    color:var(--ink); line-height:1.7; background:#fff;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width:760px; margin:0 auto; padding:0 22px; }
-  a { color:var(--blue); }
-  header { border-bottom:1px solid var(--line); }
-  header .wrap { display:flex; align-items:center; height:60px; }
-  .brand { font-weight:700; font-size:17px; text-decoration:none; color:var(--ink); }
-  .brand span { color:var(--blue); }
-  h1 { font-size:30px; letter-spacing:-.5px; margin:44px 0 6px; }
-  .updated { color:var(--muted); font-size:14px; margin:0 0 34px; }
-  h2 { font-size:19px; margin:34px 0 8px; letter-spacing:-.2px; }
-  p, li { font-size:15px; }
-  ul { padding-left:20px; }
-  li { margin-bottom:7px; }
-  code {
-    background:var(--bg-soft); border:1px solid var(--line); border-radius:3px;
-    padding:1px 5px; font-size:13px;
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+  a { color: var(--blue); }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); z-index: 10;
   }
-  .callout {
-    background:var(--bg-soft); border:1px solid var(--line); border-left:3px solid var(--blue);
-    border-radius:6px; padding:16px 20px; margin:22px 0;
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
   }
-  .callout p:first-child { margin-top:0; }
-  .callout p:last-child { margin-bottom:0; }
-  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14px; }
-  th, td { border:1px solid var(--line); padding:9px 11px; text-align:left; vertical-align:top; }
-  th { background:var(--bg-soft); font-weight:600; }
-  footer { border-top:1px solid var(--line); margin-top:50px; padding:26px 0 50px; color:var(--muted); font-size:13px; }
-  footer a { color:var(--muted); margin-right:16px; }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; text-decoration: none; color: var(--ink); }
+  .brand span { color: var(--blue); }
+  nav a {
+    margin-left: 20px; text-decoration: none; color: var(--muted);
+    font-size: 14px;
+  }
+  nav a:hover { color: var(--ink); }
+
+  .hero { padding: 68px 0 56px; }
+  h1 {
+    font-size: 40px; line-height: 1.18; letter-spacing: -.7px;
+    margin: 0 0 16px; max-width: 720px;
+  }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta {
+    display: inline-block; background: var(--blue); color: #fff;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 24px; border-radius: 6px;
+  }
+  .cta:hover { background: var(--blue-dark); }
+  .cta-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; letter-spacing: -.3px; margin: 0 0 8px; }
+  h3 { font-size: 17px; margin: 26px 0 6px; }
+  .section-lede { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; background: #fff;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li {
+    padding: 13px 0 13px 30px; border-bottom: 1px solid var(--line);
+    position: relative; font-size: 15px;
+  }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 13px;
+    color: var(--ok); font-weight: 700;
+  }
+  .checks b { font-weight: 600; }
+  .checks span { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  td.yes { color: var(--ok); font-weight: 600; }
+  td.no  { color: var(--muted); }
+
+  details {
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 14px; }
+
+  .privacy-box {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 22px;
+  }
+  .privacy-box p { margin: 0 0 10px; font-size: 15px; }
+  .privacy-box p:last-child { margin-bottom: 0; }
+
+  /* Added for this page: the formula blocks. Element rules only, no new class. */
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 6px; padding: 12px 14px; margin: 14px 0;
+    overflow-x: auto; font-size: 13px; line-height: 1.55;
+  }
+  pre code { font-size: 13px; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 30px 0 50px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--muted); margin-right: 16px; }
 </style>
+
+  <link rel="canonical" href="https://shiftsheet.me/google-sheets-shift-schedule-mistakes.html">
+  <meta name="description" content="Double bookings, short rest, weekly overtime, unknown shift codes. Copy-paste Google Sheets formulas that catch them in a staff rota, and the three a formula can't.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://shiftsheet.me/google-sheets-shift-schedule-mistakes.html">
+  <meta property="og:site_name" content="ShiftSheet">
+  <meta property="og:title" content="Seven mistakes in a Google Sheets shift schedule, and the formulas that find them">
+  <meta property="og:description" content="Double bookings, short rest, weekly overtime, unknown shift codes. Copy-paste Google Sheets formulas that catch them in a staff rota, and the three a formula can't.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Seven mistakes in a Google Sheets shift schedule, and the formulas that find them">
+  <meta name="twitter:description" content="Copy-paste Google Sheets formulas for the errors that hide in a staff rota, and an honest account of the checks a formula cannot do.">
 </head>
 <body>
 
-<header><div class="wrap"><a class="brand" href="/">Shift<span>Sheet</span></a></div></header>
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">Shift<span>Sheet</span></a>
+    <nav>
+      <a href="#setup">The grid</a>
+      <a href="#hours">Hours</a>
+      <a href="#stop">Where formulas stop</a>
+      <a href="/">Home</a>
+    </nav>
+  </div>
+</header>
 
 <div class="wrap">
 
-<h1>Privacy Policy</h1>
-<p class="updated">Last updated 3 September 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
+  <div class="hero">
+    <h1>Seven mistakes in a Google Sheets shift schedule, and the formulas that find them</h1>
+    <p class="lede">
+      Most articles about staff scheduling in Google Sheets hand you a template and then
+      tell you to buy an app. This one does neither. It goes through the seven things
+      that actually go wrong in a work schedule built on a grid, gives you working
+      formulas for the four you can catch yourself, and is straight with you about the
+      three where a formula runs out of road.
+    </p>
+  </div>
 
-<div class="callout">
-  <p><b>The short version.</b> This add-on has no server. It runs inside Google Sheets on
-  Google's own infrastructure. We do not receive, store or see your spreadsheet, your
-  staff names, their hours or their pay. The add-on itself makes no network calls at all:
-  nothing is sent to us, and nothing is sent to any third party. This is described in
-  full below.</p>
-</div>
+  <section id="setup">
+    <h2>The grid these formulas assume</h2>
+    <p class="section-lede">
+      Every formula below refers to real cell ranges, so you need to know which ranges.
+      Change them to match yours, but change them everywhere.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Staff</h3>
+        <p><b>A2:A25</b> holds one name per row. Nothing else on this sheet matters for
+           the checks, though a weekly hour limit per person is handy in column D.</p>
+      </div>
+      <div class="card">
+        <h3>Shifts</h3>
+        <p><b>A2:A15</b> is the shift code, <b>B</b> the start time, <b>C</b> the end time.
+           Times, not text. If <code>07:00</code> sits on the left of the cell it is text
+           and the arithmetic below will fail.</p>
+      </div>
+      <div class="card">
+        <h3>Schedule</h3>
+        <p><b>A2:A25</b> repeats the names, <b>B1:AF1</b> holds the 31 dates as real
+           dates, <b>B2:AF25</b> is the grid you type codes into. One code per cell,
+           for now.</p>
+      </div>
+      <div class="card">
+        <h3>Hours, Runs, Problems</h3>
+        <p>Three extra sheets the formulas write into. Nothing is typed on them by hand.
+           Keeping the working out off the roster is the single best decision in this
+           whole setup.</p>
+      </div>
+    </div>
+  </section>
 
-<h2>Who we are</h2>
-<p>
-  ShiftSheet is an independent add-on published by an individual developer. Contact:
-  <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>.
-</p>
+  <section id="length">
+    <h2>First, teach the sheet how long a shift is</h2>
+    <p class="section-lede">
+      Nothing else works without this. Put it in <b>Shifts!D2</b>.
+    </p>
+<pre><code>=ARRAYFORMULA(IF(A2:A15="","",MOD(C2:C15-B2:B15,1)*24))</code></pre>
+    <p>
+      The <code>MOD</code> is the whole point. A night shift from 23:00 to 07:00 gives
+      <code>C-B = -16</code> hours, which is nonsense, and <code>MOD</code> turns it into
+      8. Subtracting times directly is the most common single error in a hand-built
+      shift planner, and it under-reports every night shift you run.
+    </p>
+    <p>
+      One thing to know: a shift whose start and end are identical comes out as 0 rather
+      than 24. If you genuinely run 24-hour shifts, split them.
+    </p>
+  </section>
 
-<h2>What the add-on can access</h2>
-<p>The add-on's own code requests <b>one</b> permission from Google, and Google
-   classes it as non-sensitive. If you install from the Google Workspace
-   Marketplace, Google's install screen lists <b>two more</b> that come from our
-   Marketplace listing configuration rather than from the add-on. All three are
-   non-sensitive. Here is every one of them:</p>
+  <section id="people">
+    <h2>1 and 2. Names that do not line up</h2>
+    <p class="section-lede">
+      A roster drifts. Someone leaves, someone is hired, a name gets typed as
+      <em>Kate</em> on one sheet and <em>Katie</em> on the other, and from then on that
+      person has no hour limit and no pay rate applied to them.
+    </p>
+    <p>Put these on the <b>Problems</b> sheet. Column B, three rows.</p>
 
-<table>
-  <tr><th>Permission</th><th>Google classification</th><th>What it allows</th><th>Why it is needed</th></tr>
-  <tr>
-    <td><code>spreadsheets.currentonly</code></td>
-    <td>Non-sensitive</td>
-    <td>Read and write <b>only the single spreadsheet you have open</b> while the add-on is running.</td>
-    <td>To build the schedule grid and write the report sheets.</td>
-  </tr>
-  <tr>
-    <td><code>userinfo.email</code></td>
-    <td>Non-sensitive</td>
-    <td>See your primary Google Account email address.</td>
-    <td>Requested by the Marketplace listing. <b>ShiftSheet's code never reads it</b> &mdash; it is not in the add-on's manifest, and only appears if you install from the Marketplace.</td>
-  </tr>
-  <tr>
-    <td><code>userinfo.profile</code></td>
-    <td>Non-sensitive</td>
-    <td>See your basic profile info, including anything you have made publicly available.</td>
-    <td>Same as above: listing configuration only, never read by the add-on.</td>
-  </tr>
-</table>
+    <h3>In the grid but not on the staff list</h3>
+<pre><code>=IFERROR(TEXTJOIN(", ",TRUE,UNIQUE(FILTER(Schedule!A2:A25,
+  Schedule!A2:A25&lt;&gt;"",COUNTIF(Staff!$A$2:$A$25,Schedule!A2:A25)=0))),"none")</code></pre>
 
-<p>
-  Because all three are non-sensitive, the "Google hasn't verified this app"
-  screen should not appear, on either route. If you do see it, click
-  <b>Advanced</b>, then <b>Go to ShiftSheet (unsafe)</b>, then <b>Allow</b>.
-</p>
+    <h3>On the staff list but never rostered</h3>
+<pre><code>=IFERROR(TEXTJOIN(", ",TRUE,FILTER(Staff!A2:A25,
+  Staff!A2:A25&lt;&gt;"",COUNTIF(Schedule!$A$2:$A$25,Staff!A2:A25)=0)),"none")</code></pre>
 
-<p>
-  Because the spreadsheet permission is <code>currentonly</code>, the add-on
-  <b>cannot</b> see your other spreadsheets, your Google Drive, your Gmail, your Google
-  Calendar, your contacts, or anything else in your Google Account. This is enforced by
-  Google, not by us.
-</p>
+    <h3>The same person on two rows</h3>
+<pre><code>=IFERROR(TEXTJOIN(", ",TRUE,UNIQUE(FILTER(Schedule!A2:A25,
+  Schedule!A2:A25&lt;&gt;"",COUNTIF(Schedule!$A$2:$A$25,Schedule!A2:A25)&gt;1))),"none")</code></pre>
 
-<p>
-  The only <b>Google user data</b> the add-on accesses is the content of the single
-  spreadsheet you have open at the time: the staff names, shift codes, hours and rule
-  settings you type into it. That data is read in order to build the schedule and run
-  the checks, it is written back to the same spreadsheet, and it is used for nothing
-  else. It is never sent to us, never stored outside your own Google Account, and never
-  shared with anyone. We access, use, store and share no other Google user data.
-</p>
+    <p>
+      The second one is worth more than it looks. Every employee scheduling tool tells
+      you who is double booked. Almost none tell you who you forgot to put on the rota
+      at all, which is the mistake you find out about at 07:00 when nobody opens up.
+    </p>
+    <p>
+      All three depend on <code>COUNTIF</code> matching text exactly, which means a
+      trailing space defeats them. Wrap the ranges in <code>TRIM</code> if your names
+      come from a form.
+    </p>
+  </section>
 
-<h2>What we collect</h2>
-<p><b>We do not collect, receive, store or transmit your spreadsheet content.</b> We
-   operate no servers, no database, and no analytics.</p>
+  <section id="codes">
+    <h2>3. A shift code nobody defined</h2>
+    <p class="section-lede">
+      You type <code>N</code> for night. One Tuesday you type <code>n</code>, or
+      <code>Nn</code>, or <code>N </code> with a space. The cell looks fine. It is worth
+      zero hours in every total you calculate from it.
+    </p>
+    <p>
+      Catch it where you can see it. Select <b>Schedule!B2:AF25</b>, then Format,
+      Conditional formatting, Custom formula is:
+    </p>
+<pre><code>=AND(B2&lt;&gt;"",COUNTIF(Shifts!$A$2:$A$15,B2)=0)</code></pre>
+    <p>
+      Set it to a red fill. Every cell holding a code that is not in your shift library
+      goes red the moment you type it. It takes a minute to set up and catches more than
+      anything else here.
+    </p>
+    <p>
+      Better than catching it is preventing it. Select the same range, Data, Data
+      validation, Dropdown from a range, and point it at <code>Shifts!A2:A15</code>. Now
+      the grid only accepts codes that exist. Shift management gets a lot quieter when
+      typing is no longer possible.
+    </p>
+  </section>
 
-<p>The add-on saves five small pieces of information using Google's own storage service
-   (<code>PropertiesService</code>), which keeps them inside your Google Account and the
-   document you are working in. We cannot read any of them, and none of them is ever
-   sent anywhere:</p>
-<ul>
-  <li><b>Your rule settings</b> — maximum weekly hours, minimum rest, overtime threshold
-      and similar. Stored in the document.</li>
-  <li><b>Which month the schedule covers</b>, so the reports know what to add up.
-      Stored in the document.</li>
-  <li><b>Which sheets the add-on created itself</b>, so that it never overwrites a sheet
-      you made. Stored in the document.</li>
-  <li><b>How many schedules you have finished</b>, counted so the add-on can ask once
-      whether you would leave a review. Stored against your Google Account.</li>
-  <li><b>Whether that review question has already been answered</b>, so it is never
-      asked a second time. Stored against your Google Account.</li>
-</ul>
+  <section id="hours">
+    <h2>4. Hours per person, and the weekly limit</h2>
+    <p class="section-lede">
+      This is the one that costs money. Overtime is almost always defined per week, and
+      a month grid tempts you into adding up the month. Fifty hours one week and thirty
+      the next averages to forty and hides ten hours of overtime.
+    </p>
+    <p>
+      On the <b>Hours</b> sheet, put this in <b>B2</b> and drag it down to row 25. It
+      turns the whole grid into hours.
+    </p>
+<pre><code>=ARRAYFORMULA(IF(Schedule!B2:AF2="",0,
+  IFERROR(VLOOKUP(Schedule!B2:AF2,Shifts!$A$2:$D$15,4,FALSE),0)))</code></pre>
+    <p>
+      One formula per row, 31 columns wide. The month total for a person is then just
+      <code>=SUM(B2:AF2)</code>, and you have a second use for it: a cell with something
+      typed in it that produced 0 hours is a typo. On the <b>Problems</b> sheet:
+    </p>
+<pre><code>=SUMPRODUCT((Schedule!$B$2:$AF$25&lt;&gt;"")*(Hours!$B$2:$AF$25=0))</code></pre>
+    <p>
+      Now the weekly part. Put your week start dates in <b>Hours!AH1</b> going right,
+      one Monday per column, then this in <b>AH2</b> and drag it right and down.
+    </p>
+<pre><code>=SUMPRODUCT((Schedule!$B$1:$AF$1&gt;=AH$1)*(Schedule!$B$1:$AF$1&lt;AH$1+7)*$B2:$AF2)</code></pre>
+    <p>
+      That is hours per person per week, counted by actual date rather than by column
+      position. Put your limit in a spare cell, say <code>AO1 = 48</code>, and
+      conditional format <b>AH2:AM25</b> with <code>=AH2&gt;$AO$1</code>.
+    </p>
+    <p>
+      Here is the part the template articles leave out. The first and last weeks of any
+      month are cut in half. Someone who worked 20 hours on the 29th, 30th and 31st of
+      last month and 32 hours on the 1st and 2nd of this one is over 48 for that week,
+      and no formula living on this month's sheet can see it. A monthly grid and a
+      weekly limit disagree about where the week starts, and that disagreement is
+      structural, not a bug you can formula your way out of.
+    </p>
+  </section>
 
-<h2>Outbound requests: none</h2>
-<p>
-  The add-on makes no network calls. It contacts no server of ours, because we run
-  none, and it contacts no third party either. Nothing is sent when you install it,
-  nothing is sent while you use it, and nothing is sent when you buy the paid version.
-</p>
-<p>
-  The paid version is a separate copy of the template, so there is no key to enter and
-  no check to run. Whether a copy is the free or the paid one is decided by a line in
-  its own code, inside your own Drive.
-</p>
+  <section id="runs">
+    <h2>5. Too many days in a row</h2>
+    <p class="section-lede">
+      Eleven days without a day off does not look like anything on a grid. Each cell is
+      innocent. It is the run that is the problem.
+    </p>
+    <p>
+      This one needs a helper sheet, and the reason is worth understanding. Counting a
+      run means each day's answer depends on yesterday's answer, and an array formula
+      cannot refer to its own output. So on the <b>Runs</b> sheet, <b>B2</b> is:
+    </p>
+<pre><code>=IF(Schedule!B2="",0,1)</code></pre>
+    <p>and <b>C2</b> is:</p>
+<pre><code>=IF(Schedule!C2="",0,B2+1)</code></pre>
+    <p>
+      Drag C2 right to AF2, then select B2:AF2 and drag the whole thing down to row 25.
+      The longest run for a person is <code>=MAX(B2:AF2)</code>. Flag anything over your
+      limit with <code>=IF(MAX(B2:AF2)&gt;6,"check","")</code>.
+    </p>
+    <p>
+      There is a single-cell version of this using <code>MMULT</code>. It works and it
+      is unreadable, and the next person to inherit your spreadsheet will not be able to
+      change it. A visible helper row is the better engineering decision even though it
+      looks less clever.
+    </p>
+    <p>
+      Same month boundary problem as the weekly limit: a run that started on the 28th of
+      last month reads as starting on the 1st.
+    </p>
+  </section>
 
-<h2>Google's Limited Use requirements</h2>
-<div class="callout">
-  <p>
-    ShiftSheet's use and transfer of information received from Google APIs to any other
-    app will adhere to the
-    <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>,
-    including the Limited Use requirements.
-  </p>
-  <p>
-    Specifically: we do not transfer your Google user data to third parties except as
-    necessary to provide or improve the add-on; we do not use it for advertising; we do
-    not sell it; and no humans read it, because it never reaches us in the first place.
-  </p>
-  <p>
-    There is no exception to this. No Google user data, and nothing derived from it,
-    is transferred anywhere by the add-on, because the add-on makes no network calls.
-  </p>
-</div>
+  <section id="stop">
+    <h2>Where formulas stop</h2>
+    <p class="section-lede">
+      Two of the seven I would not attempt in a spreadsheet, and one I would attempt
+      only if the grid stays simple. Being clear about which is which saves you an
+      afternoon.
+    </p>
 
-<h2>Data retention and deletion</h2>
-<p>
-  Since we hold no copy of your data, there is nothing on our side to retain or delete.
-</p>
-<ul>
-  <li>To remove your saved rule settings, delete the sheets the add-on created, or delete
-      the spreadsheet itself.</li>
-  <li>To revoke the add-on's access entirely, uninstall it, or visit your
-      <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account permissions</a>.</li>
-  <li>Everything the add-on wrote into your spreadsheet stays there afterwards as ordinary
-      cells, readable without the add-on installed.</li>
-</ul>
+    <h3>6. Rest between two shifts</h3>
+    <p>
+      This is the check that matters most for the people on the rota and it is the one a
+      spreadsheet handles worst. To know the gap you need the exact moment the previous
+      shift ended, as a date and a time together, and for a night shift that moment is
+      on the following calendar day. So you need a second mirror grid for start times:
+    </p>
+<pre><code>=ARRAYFORMULA(IF(Schedule!B2:AF2="","",
+  IFERROR(VLOOKUP(Schedule!B2:AF2,Shifts!$A$2:$D$15,2,FALSE),"")))</code></pre>
+    <p>a third for end moments, built from the date, the start and the length:</p>
+<pre><code>=IF(Schedule!B2="","",Schedule!B$1+Starts!B2+Hours!B2/24)</code></pre>
+    <p>and a fourth for the gap itself, in hours:</p>
+<pre><code>=IF(OR(Schedule!C2="",Schedule!B2=""),"",(Schedule!C$1+Starts!C2-Ends!B2)*24)</code></pre>
+    <p>
+      That works. It is also four sheets of scaffolding to check one rule, and it still
+      only compares a day against the day immediately before it. A gap that spans a day
+      off is not measured, which is usually harmless and occasionally not, when the
+      earlier shift ran past midnight. Put two codes in one cell and the whole thing
+      returns the wrong shift's times without telling you.
+    </p>
 
-<h2>Children</h2>
-<p>
-  This add-on is a business tool and is not directed at children under 13. We do not
-  knowingly collect information from children — or, indeed, from anyone.
-</p>
+    <h3>7. Two shifts in one cell that overlap each other</h3>
+    <p>
+      Writing <code>M/A</code> in a cell for a double is a reasonable habit. Checking
+      whether those two shifts collide is not reasonable to do with formulas.
+      <code>SPLIT</code> gives you a variable number of parts, so a formula written for
+      two codes silently ignores the third, and you have to compare every pair of start
+      and end times against every other pair. You can at least count them. On the
+      <b>Problems</b> sheet:
+    </p>
+<pre><code>=COUNTIF(Schedule!B2:AF25,"*/*")</code></pre>
+    <p>
+      That tells you how many cells hold more than one shift. Whether they overlap is a
+      different question and that is where I would stop.
+    </p>
 
-<h2>Changes to this policy</h2>
-<p>
-  If this policy changes, the date at the top of this page changes with it. If a change
-  ever meant the add-on started collecting data it does not collect today, that would
-  require a new permission, and Google would ask for your consent before it took effect.
-</p>
+    <h3>And one thing no formula can fix</h3>
+    <p>
+      A schedule is a plan. Attendance is what happened. Keep them on separate sheets,
+      because the moment you start editing last week's rota to record who actually
+      turned up, you have destroyed the only record of what you asked people to do.
+      Copy the month, rename the copy, and let the plan stand. The timesheets you hand
+      to payroll come off the attendance copy. The plan is what you promised, and it is
+      worth being able to look back at.
+    </p>
+  </section>
 
-<h2>Contact</h2>
-<p>
-  Questions about this policy, or about what the add-on does with anything:
-  <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>.
-</p>
+  <section id="verdict">
+    <h2>What you end up with</h2>
+    <p class="section-lede">
+      Four checks that work properly and take about half an hour to set up. Three that
+      are honest work.
+    </p>
+    <table>
+      <tr><th>Check</th><th>With formulas</th></tr>
+      <tr><td>Names not on the staff list</td><td class="yes">one formula</td></tr>
+      <tr><td>Unknown shift code</td><td class="yes">conditional format, plus a dropdown</td></tr>
+      <tr><td>Hours per person</td><td class="yes">one mirror grid</td></tr>
+      <tr><td>Over the weekly limit</td><td class="yes">works inside the month</td></tr>
+      <tr><td>Too many days in a row</td><td class="no">helper row, blind at month edges</td></tr>
+      <tr><td>Not enough rest</td><td class="no">four mirror grids, breaks on doubles</td></tr>
+      <tr><td>Overlapping shifts in one cell</td><td class="no">detectable, not checkable</td></tr>
+    </table>
+    <p style="margin-top:18px">
+      If you run one location and a stable team, that is genuinely enough, and the
+      schedules you build this way stay yours in a file you own. The formulas start to
+      hurt when the team grows, when doubles become normal, or when a run of days
+      crosses from one month into the next.
+    </p>
+  </section>
+
+  <section id="addon">
+    <h2>The short version of the sales pitch</h2>
+    <p class="section-lede">
+      All seven of these are what ShiftSheet does, in one pass over the month, in the
+      same spreadsheet.
+    </p>
+    <ul class="checks">
+      <li><b>Overlapping shifts</b> <span>two codes in one cell whose hours run into each other</span></li>
+      <li><b>Double booked</b> <span>a shift starting before the previous one has finished</span></li>
+      <li><b>Not enough rest</b> <span>measured across midnight, not by calendar day</span></li>
+      <li><b>Over weekly hours</b> <span>against that person's own limit if they have one</span></li>
+      <li><b>Too many days in a row</b> <span>runs with no day off</span></li>
+      <li><b>Unknown shift code</b> <span>anything not on your Shifts sheet</span></li>
+      <li><b>Not on Staff sheet</b> <span>a name in the grid with no row on the staff list</span></li>
+    </ul>
+    <p style="margin-top:22px">
+      Findings go to their own Issues sheet with the person and the date on each line,
+      and your grid is never edited. It is free for a team of any size, with no account
+      and no sign-up, and its script declares one permission, to read and write the one
+      spreadsheet you open it in. Installing from the Marketplace adds Google's own
+      email and profile pair on top, as it does for every listed add-on. The add-on
+      makes no network calls at all. The $39 version adds the money
+      side: pay rates turned into what the month cost, and every timesheet printed in
+      one go instead of one at a time.
+    </p>
+    <p style="margin-top:18px">
+      <a class="cta" href="https://docs.google.com/spreadsheets/d/1UpaCIeLlbo2JyKfwSz12NxLUYkhXdja8AwuMVW-sK90/copy" target="_blank" rel="noopener">Make your own copy, free</a>
+    </p>
+    <p class="cta-note">
+      Also on the <a href="https://workspace.google.com/marketplace/app/shiftsheet_employee_timesheet_shift_sche/898911767169" target="_blank" rel="noopener">Google Workspace Marketplace</a>.
+      Either route runs the same code. If you would rather keep your own formulas,
+      keep them, and take the <code>MOD</code> one at the top with you.
+    </p>
+  </section>
 
 </div>
 
 <footer>
   <div class="wrap">
     <a href="/">Home</a>
+    <a href="privacy.html">Privacy policy</a>
     <a href="terms.html">Terms of service</a>
     <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>
+    <p style="margin-top:14px">ShiftSheet is an independent add-on. Google Sheets and Google Workspace are trademarks of Google LLC.</p>
   </div>
 </footer>
 
