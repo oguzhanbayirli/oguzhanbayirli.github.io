@@ -66,8 +66,11 @@
 </p>
 
 <h2>What the add-on can access</h2>
-<p>The add-on requests one permission from Google, and Google classes it as
-   non-sensitive. It exists for one job:</p>
+<p>The add-on's own code requests <b>one</b> permission from Google, and Google
+   classes it as non-sensitive. If you install from the Google Workspace
+   Marketplace, Google's install screen lists <b>two more</b> that come from our
+   Marketplace listing configuration rather than from the add-on. All three are
+   non-sensitive. Here is every one of them:</p>
 
 <table>
   <tr><th>Permission</th><th>Google classification</th><th>What it allows</th><th>Why it is needed</th></tr>
@@ -77,11 +80,23 @@
     <td>Read and write <b>only the single spreadsheet you have open</b> while the add-on is running.</td>
     <td>To build the schedule grid and write the report sheets.</td>
   </tr>
+  <tr>
+    <td><code>userinfo.email</code></td>
+    <td>Non-sensitive</td>
+    <td>See your primary Google Account email address.</td>
+    <td>Requested by the Marketplace listing. <b>ShiftSheet's code never reads it</b> &mdash; it is not in the add-on's manifest, and only appears if you install from the Marketplace.</td>
+  </tr>
+  <tr>
+    <td><code>userinfo.profile</code></td>
+    <td>Non-sensitive</td>
+    <td>See your basic profile info, including anything you have made publicly available.</td>
+    <td>Same as above: listing configuration only, never read by the add-on.</td>
+  </tr>
 </table>
 
 <p>
-  Because that one permission is non-sensitive, the "Google hasn't verified this app"
-  screen should not appear when you open your copy. If you do see it, click
+  Because all three are non-sensitive, the "Google hasn't verified this app"
+  screen should not appear, on either route. If you do see it, click
   <b>Advanced</b>, then <b>Go to ShiftSheet (unsafe)</b>, then <b>Allow</b>.
 </p>
 
