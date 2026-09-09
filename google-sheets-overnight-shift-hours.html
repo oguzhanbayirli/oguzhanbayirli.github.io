@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overnight shift hours in Google Sheets, and why the total comes out negative</title>
+<link rel="icon" type="image/png" href="icon-128.png">
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #5f6368;
+    --line: #e3e6ea;
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --bg-soft: #f7f9fc;
+    --ok: #137333;
+    --warn: #b06000;
+    --err: #c5221f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+  a { color: var(--blue); }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); z-index: 10;
+  }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; text-decoration: none; color: var(--ink); }
+  .brand span { color: var(--blue); }
+  nav a {
+    margin-left: 20px; text-decoration: none; color: var(--muted);
+    font-size: 14px;
+  }
+  nav a:hover { color: var(--ink); }
+
+  .hero { padding: 68px 0 56px; }
+  h1 {
+    font-size: 40px; line-height: 1.18; letter-spacing: -.7px;
+    margin: 0 0 16px; max-width: 720px;
+  }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta {
+    display: inline-block; background: var(--blue); color: #fff;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 24px; border-radius: 6px;
+  }
+  .cta:hover { background: var(--blue-dark); }
+  .cta-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; letter-spacing: -.3px; margin: 0 0 8px; }
+  h3 { font-size: 17px; margin: 26px 0 6px; }
+  .section-lede { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; background: #fff;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li {
+    padding: 13px 0 13px 30px; border-bottom: 1px solid var(--line);
+    position: relative; font-size: 15px;
+  }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 13px;
+    color: var(--ok); font-weight: 700;
+  }
+  .checks b { font-weight: 600; }
+  .checks span { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  td.yes { color: var(--ok); font-weight: 600; }
+  td.no  { color: var(--muted); }
+
+  details {
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 14px; }
+
+  .privacy-box {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 22px;
+  }
+  .privacy-box p { margin: 0 0 10px; font-size: 15px; }
+  .privacy-box p:last-child { margin-bottom: 0; }
+
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 6px; padding: 12px 14px; margin: 14px 0;
+    overflow-x: auto; font-size: 13px; line-height: 1.55;
+  }
+  pre code { font-size: 13px; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 30px 0 50px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--muted); margin-right: 16px; }
+</style>
+
+  <link rel="canonical" href="https://shiftsheet.me/google-sheets-overnight-shift-hours.html">
+  <meta name="description" content="A shift from 23:00 to 07:00 subtracts to minus 16 hours. Why that happens, the MOD formula that fixes it, unpaid breaks, and which day a night shift belongs to.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://shiftsheet.me/google-sheets-overnight-shift-hours.html">
+  <meta property="og:site_name" content="ShiftSheet">
+  <meta property="og:title" content="Overnight shift hours in Google Sheets, and why the total comes out negative">
+  <meta property="og:description" content="A shift from 23:00 to 07:00 subtracts to minus 16 hours. Why that happens, the MOD formula that fixes it, unpaid breaks, and which day a night shift belongs to.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Overnight shift hours in Google Sheets, and why the total comes out negative">
+  <meta name="twitter:description" content="Working formulas for shift hours that run past midnight, plus the parts a single month grid cannot do.">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">Shift<span>Sheet</span></a>
+    <nav>
+      <a href="#why">Why it breaks</a>
+      <a href="#mod">The fix</a>
+      <a href="#day">Which day</a>
+      <a href="#stop">Where it stops</a>
+      <a href="/">Home</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Overnight shift hours in Google Sheets, and why the total comes out negative</h1>
+    <p class="lede">
+      A shift that runs 23:00 to 07:00 subtracts to minus 16 hours. Sheets is not
+      confused. It answered a different question from the one you meant to ask. This
+      page shows what a time actually is inside a spreadsheet, the one function that
+      fixes the arithmetic, how to take an unpaid break off it, which calendar day a
+      night shift belongs to, and the two things a month grid cannot work out no matter
+      what you write in it.
+    </p>
+  </div>
+
+  <section id="assume">
+    <h2>The sheet these formulas assume</h2>
+    <p class="section-lede">
+      Same layout as the <a href="google-sheets-shift-schedule-mistakes.html">seven
+      mistakes page</a>, with one column added. Change the ranges to match yours, but
+      change them everywhere.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Shifts</h3>
+        <p><b>A2:A15</b> shift code, <b>B</b> start time, <b>C</b> end time,
+           <b>D</b> length in hours (a formula, never typed), <b>E</b> unpaid break in
+           whole minutes. B and C hold real times, not text.</p>
+      </div>
+      <div class="card">
+        <h3>Schedule</h3>
+        <p><b>B1:AF1</b> holds the dates of the month as real dates, <b>B2:AF25</b> is
+           the grid. A shift code goes in the column of the day the shift
+           <em>starts</em>, which matters more than it sounds and is settled further
+           down.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>What 23:00 actually is</h2>
+    <p class="section-lede">
+      A time in Google Sheets is not a label. It is a fraction of one day, stored as a
+      plain number, and everything on this page follows from that.
+    </p>
+    <p>
+      Midnight is 0. Noon is 0.5. Any time is the hour divided by 24. So
+      <code>23:00</code> is 23/24, which is <b>0.958333</b>, and <code>07:00</code> is
+      7/24, which is <b>0.291667</b>. You can see this yourself: type a time in an empty
+      cell, then Format, Number, Number. The clock face disappears and the number
+      underneath shows up.
+    </p>
+    <p>
+      Now do the subtraction the obvious way. <code>C2-B2</code> is
+      0.291667 minus 0.958333, which is <b>-0.666667</b> of a day, and times 24 that is
+      <b>-16 hours</b>. Nothing went wrong. You asked how far 07:00 is from 23:00 on the
+      same day, and the honest answer is sixteen hours backwards. What you meant was the
+      <em>next</em> 07:00, and nothing in the cell says so.
+    </p>
+    <p>
+      This is the single most expensive error in a hand-built work schedule, because it
+      does not look like an error. It looks like a minus sign. Feed a column of them
+      into a monthly total and every night shift you ran comes out under-reported on the
+      timesheet you hand to payroll.
+    </p>
+  </section>
+
+  <section id="mod">
+    <h2>MOD, and why it works</h2>
+    <p class="section-lede">
+      One function. Put it in <b>Shifts!D2</b> and it fills the column.
+    </p>
+<pre><code>=ARRAYFORMULA(IF(A2:A15="","",MOD(C2:C15-B2:B15,1)*24))</code></pre>
+    <p>
+      <code>MOD(x,1)</code> throws away the whole-day part of a number and keeps the
+      remainder, and in Sheets the remainder takes the sign of the divisor. The divisor
+      here is 1, which is positive, so <b>-0.666667</b> comes back as <b>0.333333</b>,
+      and times 24 that is <b>8 hours</b>. The negative got folded forward into the next
+      day, which is exactly what an overnight shift does in real life.
+    </p>
+    <p>
+      Day shifts are untouched. A 09:00 to 17:00 gives 0.333333 straight away, already
+      between 0 and 1, and <code>MOD</code> hands it back unchanged. You do not need two
+      formulas or an <code>IF</code> to spot night shifts. One formula covers both.
+    </p>
+    <h3>Two limits worth knowing before you trust it</h3>
+    <p>
+      A shift whose start and end are identical returns 0, not 24. The remainder of a
+      whole day is nothing. If you genuinely run 24-hour shifts, split them into two
+      codes.
+    </p>
+    <p>
+      And a shift longer than 24 hours is invisible to this. A 26-hour span reads as 2
+      hours, and no arithmetic on a start time and an end time can tell those two apart,
+      because the two shifts store identical numbers. If you roster anything past a full
+      day, the length has to be typed by hand in column D rather than derived.
+    </p>
+  </section>
+
+  <section id="breaks">
+    <h2>Taking an unpaid break off</h2>
+    <p class="section-lede">
+      Keep the break in whole minutes in <b>Shifts!E</b>. Thirty, not <code>0:30</code>.
+    </p>
+<pre><code>=ARRAYFORMULA(IF(A2:A15="","",MOD(C2:C15-B2:B15,1)*24-IF(E2:E15="",0,E2:E15)/60))</code></pre>
+    <p>
+      A night shift of 23:00 to 07:00 with a 30 minute unpaid break is 8 minus 0.5, so
+      <b>7.5</b> paid hours. The <code>IF</code> in the middle is there so a blank break
+      cell reads as zero instead of dragging the whole row into an error.
+    </p>
+    <p>
+      Minutes rather than a time value is a deliberate choice. A break typed as
+      <code>0:30</code> is 0.0208 of a day, and the moment you have one column in
+      day-fractions and another in hours you will subtract one from the other and get an
+      answer that is wrong by a factor of 24. One unit per column, written in the header.
+    </p>
+    <p>
+      A break longer than the shift produces negative paid hours and says nothing. So
+      does the identical-start-and-end case above. Catch both at once: select
+      <b>Shifts!D2:D15</b>, Format, Conditional formatting, Custom formula is:
+    </p>
+<pre><code>=AND(D2&lt;&gt;"",D2&lt;=0)</code></pre>
+    <p>
+      If the break is paid, it does not belong in this column at all. Paid break time is
+      hours the person is owed.
+    </p>
+  </section>
+
+  <section id="day">
+    <h2>Which day does a night shift belong to?</h2>
+    <p class="section-lede">
+      This is a real decision with two defensible answers, and it is not a formatting
+      question. It moves money.
+    </p>
+    <p>
+      Someone works 23:00 Sunday to 07:00 Monday. Record it on the day it started and
+      those 8 hours land in the week that is ending. Record it on the day it finished
+      and they land in the new week.
+    </p>
+    <p>
+      Put numbers on it. Say that person already has 46 hours in the old week and the
+      weekly limit is 48. Under the start-day rule they finish on 54, which is six hours
+      of overtime. Under the end-day rule the old week stays at 46, nothing crosses the
+      limit, and the 8 hours open a new week that has room for them. Same person, same
+      shift, same eight hours worked. The convention decided whether you owe overtime.
+    </p>
+    <p>
+      Payroll almost always writes the shift to the day it started, and that is what
+      this page and the mistakes page both assume: one code, in the column of the start
+      date, never split across two cells. The genuine failure mode is not picking the
+      wrong rule. It is a sheet where some rows follow one rule and some follow the
+      other, which happens quietly whenever a second person starts filling in the rota.
+      Write your choice in a cell on the sheet where the next person will see it.
+    </p>
+    <h3>When you do have to split the hours at midnight</h3>
+    <p>
+      Some agreements pay a premium only for hours actually worked after midnight, so
+      you need the split rather than the total. Hours falling before midnight:
+    </p>
+<pre><code>=MIN(MOD(C2-B2,1),1-B2)*24</code></pre>
+    <p>
+      For 23:00 to 07:00 the length is 0.333333 and <code>1-B2</code> is 0.041667, one
+      hour, so <code>MIN</code> picks the hour: <b>1 hour before midnight</b>. For 09:00
+      to 17:00 the length is 0.333333 and <code>1-B2</code> is 0.625, so
+      <code>MIN</code> picks the length and returns all <b>8 hours</b>, which is right,
+      because none of that shift crosses anything. The rest of the night shift is the
+      total minus that:
+    </p>
+<pre><code>=MOD(C2-B2,1)*24-MIN(MOD(C2-B2,1),1-B2)*24</code></pre>
+    <p>
+      Seven hours after midnight. Both are single-cell formulas, so drag them down the
+      column, and both assume a shift under 24 hours. Neither takes the break off,
+      on purpose. Which side of midnight a break falls on is a decision somebody has to
+      make, not something the sheet can work out.
+    </p>
+  </section>
+
+  <section id="moments">
+    <h2>Date and time in one number</h2>
+    <p class="section-lede">
+      A length is enough for pay. It is not enough for rest, and rest is where the
+      overnight shift causes its second round of trouble.
+    </p>
+    <p>
+      To know how long someone was off you need the exact moment a shift ended, date and
+      time together, and for a night shift that moment is on the following calendar day.
+      With the date in <b>A2</b> and the start time in <b>B2</b>, the start moment is
+      just the two added:
+    </p>
+<pre><code>=A2+B2</code></pre>
+    <p>and the end moment is that plus the length from column D, converted back into a fraction of a day:</p>
+<pre><code>=A2+B2+D2/24</code></pre>
+    <p>
+      For 10 September 2026 plus 0.958333 plus 8/24, the fraction crosses 1 and the
+      whole number ticks over on its own. The result is 11 September 2026, 07:00. You do
+      not have to add a day anywhere. Dates and times are the same kind of number, which
+      is the one genuinely elegant thing about how Sheets stores them.
+    </p>
+    <p>
+      One trap. The cell will show a bare date, or a five-digit decimal, until you set
+      Format, Number, Custom date and time and give it both parts. People decide the
+      formula failed and delete it at this point. It did not fail, it is just being
+      displayed as a date. Once you can see both, the gap between two shifts is the
+      subtraction. With last night's end moment in <b>G2</b> and tonight's start moment
+      in <b>H2</b>, the rest in hours is:
+    </p>
+<pre><code>=(H2-G2)*24</code></pre>
+    <p>
+      That is the whole basis of a rest check, and the
+      <a href="google-sheets-shift-schedule-mistakes.html#stop">mistakes page</a> shows
+      what it costs to build across a full month grid. Short version: four mirror
+      sheets, and it still only compares each day with the day immediately before it.
+    </p>
+  </section>
+
+  <section id="text">
+    <h2>The times that are not times</h2>
+    <p class="section-lede">
+      Every formula above assumes B and C hold numbers. When they hold text that looks
+      like a time, some of it errors and some of it just goes quiet.
+    </p>
+    <p>
+      The tell is alignment. Numbers and dates sit against the right edge of a cell by
+      default, text sits against the left. If <code>07:00</code> is hugging the left
+      edge it is a string. That test fails if somebody set the alignment by hand, so the
+      reliable version is <code>=ISNUMBER(B2)</code>, which answers <code>FALSE</code>
+      for text no matter how it is aligned.
+    </p>
+    <p>
+      Text times arrive from a leading apostrophe, a CSV import, a paste out of another
+      system, or a column that was formatted as Plain text before anyone typed in it.
+      Count them in one cell, anywhere:
+    </p>
+<pre><code>=COUNTA(A2:A15)-COUNT(B2:B15)</code></pre>
+    <p>
+      <code>COUNTA</code> counts every shift row that has a code. <code>COUNT</code>
+      counts only cells holding a number, ignoring text and blanks. Any answer other
+      than zero is the number of rows whose start time is not a number, whether it is
+      text or simply missing. Both are rows you need to look at. Do the same with
+      <code>C2:C15</code> for the end times. To see which rows, conditional format
+      <b>Shifts!B2:C15</b> with:
+    </p>
+<pre><code>=AND(B2&lt;&gt;"",NOT(ISNUMBER(B2)))</code></pre>
+    <p>
+      To rescue them, put this in a spare column and drag it down, then copy the result
+      and paste back over the originals with Paste special, Values only:
+    </p>
+<pre><code>=IF(ISNUMBER(B2),B2,IFERROR(TIMEVALUE(B2),""))</code></pre>
+    <p>
+      <code>TIMEVALUE</code> reads text that your spreadsheet's locale recognises as a
+      time. <code>23:00</code> and <code>11:00 PM</code> normally convert.
+      <code>2300</code> and <code>23.00</code> depend entirely on the locale, and when
+      they are not recognised this returns a blank, which is the point of the
+      <code>IFERROR</code>. The blanks are your retype-by-hand list.
+    </p>
+    <p>
+      Worth knowing why this is worth chasing. An error is the good outcome, because you
+      can see <code>#VALUE!</code> from across the room. The bad outcome is a column of
+      hours with a few text entries in it, because <code>SUM</code> skips text without
+      complaining. The month total comes out short, nothing is red, and the first
+      person to notice is whoever got underpaid.
+    </p>
+  </section>
+
+  <section id="stop">
+    <h2>Where a month grid stops</h2>
+    <p class="section-lede">
+      The 31st is the awkward one. A shift starting 23:00 on the last day of the month
+      ends at 07:00 on a date that is not on this sheet.
+    </p>
+    <p>
+      The pay is fine. Under the start-day rule those 8 hours belong to the 31st, they
+      sit in the last column, and the month total is correct. Three other things are not
+      fine, and no formula on this sheet can fix any of them, because the data they need
+      lives in a different file.
+    </p>
+    <p>
+      Rest is the first. The gap between that shift finishing at 07:00 and whatever the
+      person works on the 1st is unmeasurable here, and the 1st is exactly the day a
+      short turnaround is most likely, because whoever built next month's rota was not
+      looking at last month's last row.
+    </p>
+    <p>
+      Then the run of days worked without a break, which restarts at column B whether or
+      not the person worked the previous eleven days. And then the week itself: a week
+      running Thursday to Wednesday across the boundary is half on one sheet and half on
+      the other, so a weekly limit check sees two short weeks instead of one long one and
+      reports neither.
+    </p>
+    <p>
+      I would not pretend to solve that with a formula. The two honest options are to
+      check the boundary week by hand once a month, which takes about ten minutes and
+      you will forget, or to stop using a grid.
+    </p>
+    <p>
+      Stopping means one row per shift, with a real date-and-time start and a
+      date-and-time end in their own columns, everything in one continuous table.
+      Overnight shifts stop being a special case, because the end really is on the next
+      day rather than pretending to be. Rest becomes a sort and a subtraction. There is
+      no month boundary because there are no months. What you lose is the reason you
+      built a grid in the first place: seeing the whole month at once, who is on Tuesday,
+      where the hole is. That is a real trade and not an upgrade, which is why most
+      people who try the flat table go back to the grid.
+    </p>
+    <table>
+      <tr><th>Formula</th><th>Goes in</th><th>Assumes</th></tr>
+      <tr><td><code>MOD(C-B,1)*24</code></td><td>Shifts!D2, filled down</td><td>shift under 24 hours</td></tr>
+      <tr><td><code>- E/60</code> on the end</td><td>the same cell</td><td>break is unpaid, in whole minutes</td></tr>
+      <tr><td><code>MIN(MOD(C-B,1),1-B)*24</code></td><td>a spare column</td><td>you need the hours split at midnight</td></tr>
+      <tr><td><code>A2+B2+D2/24</code></td><td>a date-time helper column</td><td>D is already in hours, cell formatted as date and time</td></tr>
+      <tr><td><code>COUNTA-COUNT</code></td><td>anywhere</td><td>answer other than 0 means text in your time column</td></tr>
+    </table>
+  </section>
+
+  <section id="addon">
+    <h2>What the add-on does with the same problem</h2>
+    <p class="section-lede">
+      If you would rather not maintain the column, this is the part ShiftSheet handles
+      in the same spreadsheet.
+    </p>
+    <p>
+      It reads the start and end times off your Shifts sheet, and when the end is not
+      after the start it adds a day before working out the length, which is the same
+      trick as <code>MOD</code> with one difference worth flagging: a shift whose start
+      and end are identical comes back as 24 hours rather than 0. It then subtracts the
+      unpaid break in minutes from that column of your Shifts sheet. Rest between shifts
+      is measured from actual finish moments rather than by calendar day, so an overnight
+      shift is compared against the next morning properly. It is free for a team of any
+      size, with no account and no sign-up, and its script declares one permission, to
+      read and write the one spreadsheet you open it in. Installing from the Marketplace
+      adds Google's own email and profile pair on top, as it does for every listed
+      add-on. The add-on makes no network calls at all. The $39 version adds pay rates
+      and prints every timesheet in one go.
+    </p>
+    <p style="margin-top:22px">
+      <a class="cta" href="https://docs.google.com/spreadsheets/d/1UpaCIeLlbo2JyKfwSz12NxLUYkhXdja8AwuMVW-sK90/copy" target="_blank" rel="noopener">Make your own copy, free</a>
+    </p>
+    <p class="cta-note">
+      Also on the <a href="https://workspace.google.com/marketplace/app/shiftsheet_employee_timesheet_shift_sche/898911767169" target="_blank" rel="noopener">Google Workspace Marketplace</a>.
+      Either route runs the same code. The other guide on this site covers
+      <a href="google-sheets-shift-schedule-mistakes.html">the seven things that go wrong
+      in a shift schedule</a> and which of them a formula can catch.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <a href="/">Home</a>
+    <a href="privacy.html">Privacy policy</a>
+    <a href="terms.html">Terms of service</a>
+    <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>
+    <p style="margin-top:14px">ShiftSheet is an independent add-on. Google Sheets and Google Workspace are trademarks of Google LLC.</p>
+  </div>
+</footer>
+
+</body>
+</html>
