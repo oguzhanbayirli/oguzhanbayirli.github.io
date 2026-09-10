@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months</title>
+<title>Google Sheets overtime formulas for a monthly rota with weekly limits</title>
 <link rel="icon" type="image/png" href="icon-128.png">
 <style>
   :root {
@@ -124,21 +124,21 @@
 </style>
 
   <link rel="canonical" href="https://shiftsheet.me/google-sheets-weekly-overtime-monthly-rota.html">
-  <meta name="description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Week keys from WEEKDAY, one SUMIF per week, and the week that lands in two months.">
+  <meta name="description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Google Sheets week keys from WEEKDAY, one SUMIF per week, and the split week.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://shiftsheet.me/google-sheets-weekly-overtime-monthly-rota.html">
   <meta property="og:site_name" content="ShiftSheet">
-  <meta property="og:title" content="Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months">
-  <meta property="og:description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Week keys from WEEKDAY, one SUMIF per week, and the week that lands in two months.">
+  <meta property="og:title" content="Google Sheets overtime formulas for a monthly rota with weekly limits">
+  <meta property="og:description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Google Sheets week keys from WEEKDAY, one SUMIF per week, and the split week.">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months">
+  <meta name="twitter:title" content="Google Sheets overtime formulas for a monthly rota with weekly limits">
   <meta name="twitter:description" content="Working Google Sheets formulas for weekly hours on a month grid, per-person limits, and the boundary week neither month can see.">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months",
-  "description": "A monthly rota and a weekly overtime limit disagree about where the week starts. Week keys from WEEKDAY, one SUMIF per week, and the week that lands in two months.",
+  "headline": "Weekly overtime on a monthly rota in Google Sheets, and the week that belongs to two months",
+  "description": "A monthly rota and a weekly overtime limit disagree about where the week starts. Google Sheets week keys from WEEKDAY, one SUMIF per week, and the split week.",
   "url": "https://shiftsheet.me/google-sheets-weekly-overtime-monthly-rota.html",
   "mainEntityOfPage": {
     "@type": "WebPage",
@@ -182,7 +182,7 @@
 <div class="wrap">
 
   <div class="hero">
-    <h1>Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months</h1>
+    <h1>Weekly overtime on a monthly rota in Google Sheets, and the week that belongs to two months</h1>
     <p class="lede">
       Overtime is counted by the week. A staff schedule is laid out by the month. Those
       two disagree about where a week starts, and most of that disagreement is fixable
@@ -373,7 +373,7 @@
       <code>QUERY</code> types each column by majority and discards the rest, so dates
       stored as text disappear from the results without an error. Check with
       <code>=COUNTA(A2:A500)-COUNT(A2:A500)</code> and expect zero, the same test the
-      <a href="google-sheets-overnight-shift-hours.html#text">overnight hours page</a>
+      <a href="google-sheets-overnight-shift-hours.html#text">night shift hours page</a>
       uses on time columns.
     </p>
     <p>What you lose is the grid. You can have it back as a generated view:</p>
@@ -521,7 +521,7 @@
       Either route runs the same code. The other two guides here cover
       <a href="google-sheets-shift-schedule-mistakes.html">the seven things that go wrong
       in a shift schedule</a> and
-      <a href="google-sheets-overnight-shift-hours.html">why overnight shift hours come
+      <a href="google-sheets-overnight-shift-hours.html">why night shift hours come
       out negative</a>.
     </p>
   </section>
