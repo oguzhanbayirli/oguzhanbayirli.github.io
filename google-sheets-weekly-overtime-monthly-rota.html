@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months</title>
+<link rel="icon" type="image/png" href="icon-128.png">
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #5f6368;
+    --line: #e3e6ea;
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --bg-soft: #f7f9fc;
+    --ok: #137333;
+    --warn: #b06000;
+    --err: #c5221f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+  a { color: var(--blue); }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); z-index: 10;
+  }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; text-decoration: none; color: var(--ink); }
+  .brand span { color: var(--blue); }
+  nav a {
+    margin-left: 20px; text-decoration: none; color: var(--muted);
+    font-size: 14px;
+  }
+  nav a:hover { color: var(--ink); }
+
+  .hero { padding: 68px 0 56px; }
+  h1 {
+    font-size: 40px; line-height: 1.18; letter-spacing: -.7px;
+    margin: 0 0 16px; max-width: 720px;
+  }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta {
+    display: inline-block; background: var(--blue); color: #fff;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 24px; border-radius: 6px;
+  }
+  .cta:hover { background: var(--blue-dark); }
+  .cta-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; letter-spacing: -.3px; margin: 0 0 8px; }
+  h3 { font-size: 17px; margin: 26px 0 6px; }
+  .section-lede { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; background: #fff;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li {
+    padding: 13px 0 13px 30px; border-bottom: 1px solid var(--line);
+    position: relative; font-size: 15px;
+  }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 13px;
+    color: var(--ok); font-weight: 700;
+  }
+  .checks b { font-weight: 600; }
+  .checks span { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  td.yes { color: var(--ok); font-weight: 600; }
+  td.no  { color: var(--muted); }
+
+  details {
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 14px; }
+
+  .privacy-box {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 22px;
+  }
+  .privacy-box p { margin: 0 0 10px; font-size: 15px; }
+  .privacy-box p:last-child { margin-bottom: 0; }
+
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 6px; padding: 12px 14px; margin: 14px 0;
+    overflow-x: auto; font-size: 13px; line-height: 1.55;
+  }
+  pre code { font-size: 13px; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 30px 0 50px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--muted); margin-right: 16px; }
+</style>
+
+  <link rel="canonical" href="https://shiftsheet.me/google-sheets-weekly-overtime-monthly-rota.html">
+  <meta name="description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Week keys from WEEKDAY, one SUMIF per week, a limit per person, and three ways to handle the week split across two months.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://shiftsheet.me/google-sheets-weekly-overtime-monthly-rota.html">
+  <meta property="og:site_name" content="ShiftSheet">
+  <meta property="og:title" content="Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months">
+  <meta property="og:description" content="A monthly rota and a weekly overtime limit disagree about where the week starts. Week keys from WEEKDAY, one SUMIF per week, a limit per person, and three ways to handle the week split across two months.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months">
+  <meta name="twitter:description" content="Working Google Sheets formulas for weekly hours on a month grid, per-person limits, and the boundary week neither month can see.">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">Shift<span>Sheet</span></a>
+    <nav>
+      <a href="#why">Why weekly</a>
+      <a href="#weekstart">Where the week starts</a>
+      <a href="#inside">Inside the month</a>
+      <a href="#boundary">The boundary week</a>
+      <a href="/">Home</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Weekly overtime on a monthly Google Sheets rota, and the week that belongs to two months</h1>
+    <p class="lede">
+      Overtime is counted by the week. A staff schedule is laid out by the month. Those
+      two disagree about where a week starts, and most of that disagreement is fixable
+      with formulas you can read. The part that is not fixable is one week a month, and
+      there are three honest things to do about it.
+    </p>
+  </div>
+
+  <section id="assume">
+    <h2>The sheets these formulas assume</h2>
+    <p class="section-lede">
+      Staff, Shifts and Schedule are laid out as on the
+      <a href="google-sheets-shift-schedule-mistakes.html#setup">seven mistakes page</a>,
+      with a weekly hour limit per person in <b>Staff!D2:D25</b> and an hourly rate in
+      <b>E2:E25</b>. Two sheets do the new work.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Hours</h3>
+        <p>The mirror grid, <b>B2:AF25</b> holding hours where the Schedule holds codes.
+           Row 1, row 26 and everything from column <b>AH</b> rightwards get used below.</p>
+      </div>
+      <div class="card">
+        <h3>Weekly</h3>
+        <p>New. <b>A2:A25</b> names, <b>B1:G1</b> week start dates, <b>B2:G25</b> hours
+           per week, <b>I2:I25</b> each person's limit. <b>M1</b> and <b>M2</b> are the
+           only cells on it you type into.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>Why the month total cannot answer this</h2>
+    <p class="section-lede">
+      Four weeks of 44, 52, 38 and 34 hours add up to 168, which averages 42. There is
+      nothing in that total to look at, and there are four hours of overtime inside it
+      against a 48 hour limit.
+    </p>
+    <p>
+      Weekly limits do not net off. A quiet week does not buy back a busy one, so the
+      average answers a question nobody asked. The 52 is owed whatever the other three
+      weeks did.
+    </p>
+    <p>
+      Keep both numbers instead of deriving one from the other. The month total is what
+      the month cost. The weekly totals are what you owe on top of it.
+    </p>
+  </section>
+
+  <section id="weekstart">
+    <h2>Who decides where the week starts</h2>
+    <p class="section-lede">
+      Not you. A contract or a payroll run fixed it already, and the job is finding out
+      which day it says.
+    </p>
+    <p>
+      It matters for anyone who works a weekend. Move the boundary from Monday to Sunday
+      and a Saturday night shift counts towards a different week, which changes which
+      week goes over. Nobody worked a different hour. Only the line moved.
+    </p>
+    <p>
+      Put the answer in <b>Weekly!M1</b> as a number, because a number is what
+      <code>WEEKDAY</code> takes. Type <b>2</b> for Monday weeks or <b>1</b> for Sunday
+      weeks. There is a third type where Monday counts as zero, and it breaks the
+      arithmetic below, which adds one and assumes counting starts there.
+    </p>
+    <p>The start of any date's week is then one subtraction:</p>
+<pre><code>=A1-WEEKDAY(A1,2)+1</code></pre>
+    <p>
+      <code>WEEKDAY</code> says how far into the week a date sits. Subtract that and you
+      land on the day before the week began, then add one to step onto it. Wednesday 9
+      September 2026 gives 3, so 9 minus 3 plus 1 is Monday the 7th. Change the 2 to a 1
+      and the same date returns Sunday the 6th. Check it rather than trusting it: run
+      <code>=TEXT(A1-WEEKDAY(A1,2)+1,"ddd")</code> over a few dates and every answer
+      should read Mon.
+    </p>
+  </section>
+
+  <section id="inside">
+    <h2>The weeks that sit inside the month</h2>
+    <p class="section-lede">
+      These are the ones that work. Two rows of setup and one formula per week.
+    </p>
+    <p>Give the Hours sheet its own copy of the dates, in <b>Hours!B1</b>:</p>
+<pre><code>=ARRAYFORMULA(IF(Schedule!B1:AF1="","",Schedule!B1:AF1))</code></pre>
+    <p>
+      It fills B1:AF1 on its own. The <code>IF</code> is there so a 30 day month leaves
+      the last column blank instead of showing a date in 1899. Then the week key row, in
+      <b>Hours!B26</b>, dragged right to AN26:
+    </p>
+<pre><code>=IF(B1="","",B1-WEEKDAY(B1,Weekly!$M$1)+1)</code></pre>
+    <p>
+      Every column of the grid now knows which week it belongs to, and you can see it.
+      On the Weekly sheet, <b>B1</b> derives the first week start from the first day of
+      the month:
+    </p>
+<pre><code>=Schedule!B1-WEEKDAY(Schedule!B1,$M$1)+1</code></pre>
+    <p>
+      <b>C1</b> is <code>=B1+7</code>, dragged right to <b>G1</b>. Six columns, because a
+      31 day month can touch six week starts, and one beginning on a Sunday under Monday
+      weeks is that worst case. The total goes in <b>B2</b>, dragged right to G and down
+      to row 25:
+    </p>
+<pre><code>=SUMIF(Hours!$B$26:$AN$26,B$1,Hours!$B2:$AN2)</code></pre>
+    <p>
+      One criteria row, one sum row, the same width. Any column whose week key matches
+      the date at the top of this one gets added, so column order stops mattering.
+    </p>
+    <h3>Why SUMIF here, and not SUMPRODUCT or QUERY</h3>
+    <p>
+      The seven mistakes page does this with <code>SUMPRODUCT</code> and a hand-typed row
+      of Mondays. It works, and it also buries the definition of a week inside every copy
+      of the formula, so a wrong week means debugging three multiplied arrays. Here the
+      definition is one visible row you can wrap in <code>TEXT</code> and read back.
+    </p>
+    <p>
+      <code>QUERY</code> is the better tool for grouping and it cannot touch a grid.
+      <code>QUERY</code> reads tables where a row is a record, and in a grid the date is
+      not a value in the row, it is the position of the column. There is nothing to group
+      by. Flatten the grid and <code>QUERY</code> becomes the right answer, which is
+      option b below.
+    </p>
+  </section>
+
+  <section id="boundary">
+    <h2>The week that belongs to two months</h2>
+    <p class="section-lede">
+      October 2026 starts on a Thursday, so its first week began on Monday 28 September.
+      Three days of that week are on one sheet and four are on the other.
+    </p>
+    <p>
+      Someone works three ten hour shifts on 28, 29 and 30 September, then three eight
+      hour shifts on 1, 2 and 3 October. September's sheet reports 30 hours for that
+      week. October's reports 24. The real number is 54 against a limit of 48, and six
+      hours of overtime exist that neither file can see.
+    </p>
+    <p>Label the affected weeks first, in <b>Weekly!B26</b> dragged right to G26:</p>
+<pre><code>=IF(OR(B$1&lt;MIN(Hours!$B$1:$AN$1),B$1+6&gt;MAX(Hours!$B$1:$AN$1)),"partial","whole")</code></pre>
+    <p>
+      A week is partial when it starts before the earliest date you hold or ends after
+      the latest. <code>MIN</code> and <code>MAX</code> across the whole date row rather
+      than the first and last cells, because a 30 day month leaves AF1 empty and a blank
+      cell reads as zero in a comparison. This keeps working after option a, since the
+      range it measures grows with the data.
+    </p>
+
+    <h3>a. Carry last month's tail onto this sheet</h3>
+    <p>
+      Put the last seven days of the previous month in <b>Hours!AH1:AN1</b> with their
+      hours underneath, looked up by name so a hire or a leaver cannot shift everyone by
+      a row:
+    </p>
+<pre><code>=IFERROR(VLOOKUP($A2,'Sep Hours'!$A$2:$AF$25,
+  MATCH(AH$1,'Sep Hours'!$A$1:$AF$1,0),FALSE),0)</code></pre>
+    <p>
+      Rightwards, not leftwards. Inserting columns before B shifts the grid and rewrites
+      every range you have already written. Out at AH nothing moves, the month total
+      stays <code>=SUM(B2:AF2)</code> and excludes the carried days, and the week key row
+      and the <code>SUMIF</code> already reach across to AN.
+    </p>
+    <p>
+      You cannot import next month, because it does not exist yet, and you do not need
+      to. If every sheet carries the previous month's tail, each boundary week is checked
+      exactly once, on the later of the two sheets, while you are still building that
+      rota and can still move a shift.
+    </p>
+    <p>
+      It costs you a dependency between two files and the same hours sitting in two
+      places, so anyone who adds both months double counts seven days. Grey the carried
+      columns out. Across separate files this becomes <code>IMPORTRANGE</code>, which
+      returns an error until somebody clicks allow access once. The <code>IFERROR</code>
+      giving 0 is right for a new hire and silently wrong for a
+      <a href="google-sheets-shift-schedule-mistakes.html#people">name that got
+      retyped</a>.
+    </p>
+
+    <h3>b. Keep a Weeks sheet, one row per shift</h3>
+    <p>
+      A flat table: <b>A</b> the date, <b>B</b> the name, <b>C</b> the code, <b>D</b> the
+      hours, and <b>E</b> the week start from
+      <code>=IF(A2="","",A2-WEEKDAY(A2,Weekly!$M$1)+1)</code>. No months, so no boundary,
+      and <code>QUERY</code> does the whole job in one cell:
+    </p>
+<pre><code>=QUERY(A2:E500,"select E, B, sum(D) where B is not null
+  group by E, B label sum(D) 'Hours'",0)</code></pre>
+    <p>
+      One row per person per week, with no six column guess and no dragging.
+      <code>QUERY</code> types each column by majority and discards the rest, so dates
+      stored as text disappear from the results without an error. Check with
+      <code>=COUNTA(A2:A500)-COUNT(A2:A500)</code> and expect zero, the same test the
+      <a href="google-sheets-overnight-shift-hours.html#text">overnight hours page</a>
+      uses on time columns.
+    </p>
+    <p>What you lose is the grid. You can have it back as a generated view:</p>
+<pre><code>=IFERROR(TEXTJOIN("/",TRUE,FILTER(Weeks!$C$2:$C$500,
+  Weeks!$A$2:$A$500=B$1,Weeks!$B$2:$B$500=$A2)),"")</code></pre>
+    <p>
+      Doubles come back joined with a slash. That grid is read only, so you plan the
+      month by typing rows into a table rather than dragging codes across days, and for
+      most people that is the sticking point rather than any of the formulas.
+    </p>
+
+    <h3>c. Stop using months</h3>
+    <p>
+      Thirteen periods of 28 days. Every period is four whole weeks, nothing is ever
+      partial, and every formula on this page becomes exact. Dates run <b>B1:AC1</b> with
+      <b>C1</b> as <code>=B1+1</code>, and each period starts 28 days after the last with
+      no drift.
+    </p>
+    <p>
+      You give up the calendar. A period stops matching a monthly payroll run or the
+      question of what June cost, and one month a year holds two period ends. If your
+      payroll is already four weekly this costs nothing. If it is monthly, you have moved
+      the mismatch rather than removed it.
+    </p>
+
+    <h3>Which one</h3>
+    <p>
+      Option a for almost everyone: it keeps the grid and the monthly cost figure, takes
+      about ten minutes once, and catches the boundary week while you can still change
+      it. Option b if you already run more than one location, or if rest between shifts
+      matters to you, since a flat table turns that into a sort and a subtraction. Option
+      c only where payroll runs on four week cycles already.
+    </p>
+  </section>
+
+  <section id="limits">
+    <h2>Everybody's limit is different</h2>
+    <p class="section-lede">
+      A part timer contracted to 20 hours and a full timer at 48 cannot share one cell,
+      and a hard coded 48 is how the part timer's extra shifts go unnoticed for a year.
+    </p>
+    <p>Default in <b>Weekly!M2</b>, per person in <b>Weekly!I2</b> dragged down to row 25:</p>
+<pre><code>=LET(lim,IFERROR(VLOOKUP($A2,Staff!$A$2:$D$25,4,FALSE),0),IF(lim=0,$M$2,lim))</code></pre>
+    <p>
+      A name missing from the Staff sheet errors, and <code>IFERROR</code> catches that.
+      A name that is on it with nothing in column D does something quieter: it comes back
+      as 0 rather than as blank, so a test against an empty string misses it and every
+      week for that person shows as over. Hence the test against zero. The price is that
+      a genuine limit of zero reads as no limit, so if somebody must not be rostered at
+      all, use a column of its own.
+    </p>
+    <p>
+      Select <b>Weekly!B2:G25</b>, then Format, Conditional formatting, Custom formula is:
+    </p>
+<pre><code>=AND(B2&lt;&gt;"",B2&gt;$I2)</code></pre>
+    <p>
+      The dollar on the column and not the row is the trick. Each cell compares itself
+      against the limit sitting on its own row, so 24 people with 24 different limits
+      need one rule between them.
+    </p>
+  </section>
+
+  <section id="pay">
+    <h2>Hours over the limit are not yet money</h2>
+    <p class="section-lede">
+      Finding the excess is arithmetic. Pricing it is a decision, and running the two
+      together is where a spreadsheet starts paying people twice.
+    </p>
+    <p>The excess for one person in one week is the clamp everyone reaches for:</p>
+<pre><code>=MAX(0,B2-$I2)</code></pre>
+    <p>
+      Across the month, counting only the weeks you can trust, in <b>Weekly!K2</b>:
+    </p>
+<pre><code>=SUMPRODUCT((B$26:G$26="whole")*(B2:G2&gt;$I2)*(B2:G2-$I2))</code></pre>
+    <p>
+      <code>MAX</code> is left out of that one on purpose. It collapses a range to a
+      single answer instead of working cell by cell, so it will not run across six weeks
+      inside an <code>ARRAYFORMULA</code>. Multiplying by the comparison does the same
+      job, since a week under the limit multiplies by FALSE and contributes nothing.
+    </p>
+    <p>Then the money, with an hourly rate in Staff column E:</p>
+<pre><code>=LET(rate,IFERROR(VLOOKUP($A2,Staff!$A$2:$E$25,5,FALSE),0),
+  B2*rate+MAX(0,B2-$I2)*rate*0.5)</code></pre>
+    <p>
+      Every hour is paid once at the normal rate, and the hours above the limit get a
+      further half on top. That is what a time and a half arrangement comes to. Writing
+      <code>excess*rate*1.5</code> and adding it to a total that already contains those
+      hours pays the excess twice, and the answer looks plausible enough to survive a
+      glance at it.
+    </p>
+    <p>
+      What no formula here can tell you is which shift the overtime came out of. The
+      excess belongs to the week rather than to any shift in it, so if your night shifts
+      carry a premium, somebody has to decide whether those six hours were night hours.
+      The sheet will apply that rule and will not invent it.
+    </p>
+  </section>
+
+  <section id="not">
+    <h2>What this is not</h2>
+    <p class="section-lede">
+      A check on hours, not a payroll system, and the gap between those two is wider than
+      it looks.
+    </p>
+    <p>
+      No tax, no social contributions, no holiday accrual, no sick pay, no public holiday
+      multiplier, no shift premium, no rounding rules. Overtime itself is defined
+      differently from one country and one contract to the next: some count it by the
+      week, some by the day above a set number of hours, some both, and salaried staff
+      often sit under different rules from hourly staff in the same room. The 48 on this
+      page is an example, not advice.
+    </p>
+    <p>
+      A rota is also only a plan. What people actually worked is a separate record, and
+      the <a href="google-sheets-shift-schedule-mistakes.html#stop">seven mistakes
+      page</a> makes the case for keeping the two apart. Every weekly total here is a
+      forecast until attendance says otherwise, which is exactly what it is good for:
+      seeing the 52 hour week while it can still be changed.
+    </p>
+  </section>
+
+  <section id="addon">
+    <h2>What the add-on does with the same problem</h2>
+    <p class="section-lede">
+      If you would rather not build the two extra rows and a Weekly sheet, this is the
+      part ShiftSheet handles in the same spreadsheet.
+    </p>
+    <p>
+      It totals hours by week against each person's own limit if they have one, and
+      reports whoever went over with the person and the week on each line. It has the
+      same boundary blind spot as everything else here, for the same reason: it reads the
+      one spreadsheet you open it in, so carrying last month's tail across is still worth
+      the ten minutes. It is free for a team of any size, with no account and no sign-up,
+      and its script declares one permission, to read and write the one spreadsheet you
+      open it in. Installing from the Marketplace adds Google's own email and profile
+      pair on top, as it does for every listed add-on. The add-on makes no network calls
+      at all. The $39 version adds pay rates turned into what the month cost, and every
+      timesheet printed in one go.
+    </p>
+    <p style="margin-top:22px">
+      <a class="cta" href="https://docs.google.com/spreadsheets/d/1UpaCIeLlbo2JyKfwSz12NxLUYkhXdja8AwuMVW-sK90/copy" target="_blank" rel="noopener">Make your own copy, free</a>
+    </p>
+    <p class="cta-note">
+      Also on the <a href="https://workspace.google.com/marketplace/app/shiftsheet_employee_timesheet_shift_sche/898911767169" target="_blank" rel="noopener">Google Workspace Marketplace</a>.
+      Either route runs the same code. The other two guides here cover
+      <a href="google-sheets-shift-schedule-mistakes.html">the seven things that go wrong
+      in a shift schedule</a> and
+      <a href="google-sheets-overnight-shift-hours.html">why overnight shift hours come
+      out negative</a>.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <a href="/">Home</a>
+    <a href="privacy.html">Privacy policy</a>
+    <a href="terms.html">Terms of service</a>
+    <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>
+    <p style="margin-top:14px">ShiftSheet is an independent add-on. Google Sheets and Google Workspace are trademarks of Google LLC.</p>
+  </div>
+</footer>
+
+</body>
+</html>
