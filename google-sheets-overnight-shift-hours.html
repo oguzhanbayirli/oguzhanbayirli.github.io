@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Overnight shift hours in Google Sheets, and why the total comes out negative</title>
+<title>How to calculate night shift hours in Google Sheets without negative totals</title>
 <link rel="icon" type="image/png" href="icon-128.png">
 <style>
   :root {
@@ -124,21 +124,21 @@
 </style>
 
   <link rel="canonical" href="https://shiftsheet.me/google-sheets-overnight-shift-hours.html">
-  <meta name="description" content="A shift from 23:00 to 07:00 subtracts to minus 16 hours. Why that happens, the MOD formula that fixes it, unpaid breaks, and which day a night shift belongs to.">
+  <meta name="description" content="A night shift from 23:00 to 07:00 subtracts to minus 16 hours in Google Sheets. The MOD formula that fixes it, unpaid breaks, and which day it belongs to.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://shiftsheet.me/google-sheets-overnight-shift-hours.html">
   <meta property="og:site_name" content="ShiftSheet">
-  <meta property="og:title" content="Overnight shift hours in Google Sheets, and why the total comes out negative">
-  <meta property="og:description" content="A shift from 23:00 to 07:00 subtracts to minus 16 hours. Why that happens, the MOD formula that fixes it, unpaid breaks, and which day a night shift belongs to.">
+  <meta property="og:title" content="How to calculate night shift hours in Google Sheets without negative totals">
+  <meta property="og:description" content="A night shift from 23:00 to 07:00 subtracts to minus 16 hours in Google Sheets. The MOD formula that fixes it, unpaid breaks, and which day it belongs to.">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Overnight shift hours in Google Sheets, and why the total comes out negative">
+  <meta name="twitter:title" content="How to calculate night shift hours in Google Sheets without negative totals">
   <meta name="twitter:description" content="Working formulas for shift hours that run past midnight, plus the parts a single month grid cannot do.">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Overnight shift hours in Google Sheets, and why the total comes out negative",
-  "description": "A shift from 23:00 to 07:00 subtracts to minus 16 hours. Why that happens, the MOD formula that fixes it, unpaid breaks, and which day a night shift belongs to.",
+  "headline": "Night shift hours in Google Sheets, and why the total comes out negative",
+  "description": "A night shift from 23:00 to 07:00 subtracts to minus 16 hours in Google Sheets. The MOD formula that fixes it, unpaid breaks, and which day it belongs to.",
   "url": "https://shiftsheet.me/google-sheets-overnight-shift-hours.html",
   "mainEntityOfPage": {
     "@type": "WebPage",
@@ -182,7 +182,7 @@
 <div class="wrap">
 
   <div class="hero">
-    <h1>Overnight shift hours in Google Sheets, and why the total comes out negative</h1>
+    <h1>Night shift hours in Google Sheets, and why the total comes out negative</h1>
     <p class="lede">
       A shift that runs 23:00 to 07:00 subtracts to minus 16 hours. Sheets is not
       confused. It answered a different question from the one you meant to ask. This
