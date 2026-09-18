@@ -448,8 +448,7 @@
       shift hours page</a> shows how it can decide whether you owe overtime.
     </p>
     <p>On the <b>Hours</b> sheet, put this in <b>B2</b> and drag it right to AF and down to row 25:</p>
-<pre><code>=IF(Schedule!B2="",0,SUMPRODUCT(IFERROR(VLOOKUP(
-  TRIM(SPLIT(Schedule!B2,"/")),Shifts!$A$2:$D$15,4,FALSE),0)))</code></pre>
+<pre><code>=IF(Schedule!B2="",0,SUMPRODUCT(IFERROR(VLOOKUP(TRIM(SPLIT(Schedule!B2,"/")),Shifts!$A$2:$D$15,4,FALSE),0)))</code></pre>
     <p>
       <code>SPLIT</code> breaks the cell at the slash, <code>TRIM</code> takes off stray
       spaces and <code>VLOOKUP</code> finds each code's hours, so an M/A on Tuesday 6 October
