@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to make a monthly employee schedule in Google Sheets</title>
+<link rel="icon" type="image/png" href="icon-128.png">
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #5f6368;
+    --line: #e3e6ea;
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --bg-soft: #f7f9fc;
+    --ok: #137333;
+    --warn: #b06000;
+    --err: #c5221f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px; }
+  a { color: var(--blue); }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px); z-index: 10;
+  }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; text-decoration: none; color: var(--ink); }
+  .brand span { color: var(--blue); }
+  nav a {
+    margin-left: 20px; text-decoration: none; color: var(--muted);
+    font-size: 14px;
+  }
+  nav a:hover { color: var(--ink); }
+
+  .hero { padding: 68px 0 56px; }
+  h1 {
+    font-size: 40px; line-height: 1.18; letter-spacing: -.7px;
+    margin: 0 0 16px; max-width: 720px;
+  }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta {
+    display: inline-block; background: var(--blue); color: #fff;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 24px; border-radius: 6px;
+  }
+  .cta:hover { background: var(--blue-dark); }
+  .cta-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; letter-spacing: -.3px; margin: 0 0 8px; }
+  h3 { font-size: 17px; margin: 26px 0 6px; }
+  .section-lede { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+
+  .card {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; background: #fff;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li {
+    padding: 13px 0 13px 30px; border-bottom: 1px solid var(--line);
+    position: relative; font-size: 15px;
+  }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before {
+    content: '✓'; position: absolute; left: 0; top: 13px;
+    color: var(--ok); font-weight: 700;
+  }
+  .checks b { font-weight: 600; }
+  .checks span { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  td.yes { color: var(--ok); font-weight: 600; }
+  td.no  { color: var(--muted); }
+
+  details {
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 14px; }
+
+  .privacy-box {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 22px;
+  }
+  .privacy-box p { margin: 0 0 10px; font-size: 15px; }
+  .privacy-box p:last-child { margin-bottom: 0; }
+
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 6px; padding: 12px 14px; margin: 14px 0;
+    overflow-x: auto; font-size: 13px; line-height: 1.55;
+  }
+  pre code { font-size: 13px; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 30px 0 50px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--muted); margin-right: 16px; }
+</style>
+
+  <link rel="canonical" href="https://shiftsheet.me/google-sheets-how-to-make-employee-schedule.html">
+  <meta name="description" content="Build a whole month of staff shifts in Google Sheets: dates across, names down, a shift dropdown, weekend shading and one colour per shift. Step by step.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://shiftsheet.me/google-sheets-how-to-make-employee-schedule.html">
+  <meta property="og:site_name" content="ShiftSheet">
+  <meta property="og:title" content="How to make a monthly employee schedule in Google Sheets">
+  <meta property="og:description" content="Build a whole month of staff shifts in Google Sheets: dates across, names down, a shift dropdown, weekend shading and one colour per shift. Step by step.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="How to make a monthly employee schedule in Google Sheets">
+  <meta name="twitter:description" content="Working Google Sheets formulas for a month grid that fits 28 to 31 days, plus the three things a grid will not show you.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to make an employee schedule in Google Sheets, a whole month at a time",
+  "description": "Build a whole month of staff shifts in Google Sheets: dates across, names down, a shift dropdown, weekend shading and one colour per shift. Step by step.",
+  "url": "https://shiftsheet.me/google-sheets-how-to-make-employee-schedule.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://shiftsheet.me/google-sheets-how-to-make-employee-schedule.html"
+  },
+  "datePublished": "2026-09-19",
+  "dateModified": "2026-09-19",
+  "inLanguage": "en",
+  "author": {
+    "@type": "Person",
+    "name": "Oguzhan Bayirli",
+    "url": "https://shiftsheet.me"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ShiftSheet",
+    "url": "https://shiftsheet.me",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://shiftsheet.me/icon-512.png"
+    }
+  }
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">Shift<span>Sheet</span></a>
+    <nav>
+      <a href="#month">Why a month</a>
+      <a href="#dates">The dates</a>
+      <a href="#colour">Colours</a>
+      <a href="#stop">Where it stops</a>
+      <a href="/">Home</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>How to make an employee schedule in Google Sheets, a whole month at a time</h1>
+    <p class="lede">
+      October 2026 starts on a Thursday, so a weekly layout needs five tabs to cover
+      it, two of them shared with September or November. A month grid needs one. This
+      page builds it from an empty sheet with formulas you can read: dates that fit any
+      month, names from a staff list, a dropdown of codes, weekend shading and a colour
+      per shift, and the three things no amount of colour will show you.
+    </p>
+  </div>
+
+  <section id="month">
+    <h2>Why a month, not a week</h2>
+    <p class="section-lede">
+      A week is easier to draw. A month is what you pay, print and pin up, so it is the
+      shape worth building once.
+    </p>
+    <p>
+      Say you pay monthly. At the end of October 2026 the questions are what the month
+      cost and who worked what. On a month grid that is one tab with one row per
+      person. On weekly tabs it is five. The month starts on a Thursday, so its first
+      week began on Monday 28 September, and its last runs from Monday 26 October to
+      Sunday 1 November. Only three of the five are wholly October. Totalling the month
+      means adding five tabs together and taking out three September days and one
+      November day, by hand, every month.
+    </p>
+    <p>
+      A month also prints as one landscape page with every day on it. And it is the
+      grid the other guides on this site assume, so every formula they add works on
+      what you build here without a single range being changed.
+    </p>
+    <p>
+      It is not free. Overtime is counted by the week, and a month usually cuts a week
+      in two at each end. That is one week a month, and the page on
+      <a href="google-sheets-weekly-overtime-monthly-rota.html#boundary">the week that
+      belongs to two months</a> has three honest ways to handle it. Everything else is
+      easier on a month.
+    </p>
+  </section>
+
+  <section id="lists">
+    <h2>Two lists before the grid</h2>
+    <p class="section-lede">
+      Same layout as the <a href="google-sheets-shift-schedule-mistakes.html#setup">seven
+      mistakes page</a>, so every formula on the other guides here works on the grid you
+      are about to build. Change the ranges to match yours, but change them everywhere.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>Staff</h3>
+        <p><b>A2:A25</b> one name per row, <b>B</b> the role, <b>D</b> that person's own
+           weekly hour limit. <b>C</b> is spare, and the overtime page puts an hourly
+           rate in <b>E</b>.</p>
+      </div>
+      <div class="card">
+        <h3>Shifts</h3>
+        <p><b>A2:A15</b> shift code, <b>B</b> start time, <b>C</b> end time, <b>D</b>
+           length in hours (a formula, never typed), <b>E</b> unpaid break in whole
+           minutes. B and C hold real times, not text.</p>
+      </div>
+      <div class="card">
+        <h3>Schedule</h3>
+        <p><b>A1</b> any date in the month, <b>B1:AF1</b> the dates, <b>A2:A25</b> the
+           names, <b>B2:AF25</b> the grid you type codes into. Column <b>AG</b> and
+           row <b>26</b> hold two counts added further down.</p>
+      </div>
+      <div class="card">
+        <h3>Codes</h3>
+        <p>Short, and in capitals: <b>M</b>, <b>A</b>, <b>N</b>. Letters, not numbers.
+           A code typed as 8 is a number to Sheets, and the day count further down
+           only counts text.</p>
+      </div>
+    </div>
+    <p>
+      Lists first, because the grid reads from both. The dropdown offers what is on
+      Shifts, the name column copies what is on Staff, and every hours formula on the
+      other pages looks a code up on Shifts to find out how long it is. A code or a
+      name that exists only in the grid is worth nothing to any of them.
+    </p>
+    <p>
+      Three codes are enough to start: M from 07:00 to 15:00, A from 15:00 to 23:00 and
+      N from 23:00 to 07:00, each with a 30 minute unpaid break, which makes
+      <b>7.5 paid hours</b> each. The length column is one formula, and it lives on the
+      <a href="google-sheets-shift-schedule-mistakes.html#length">mistakes page</a>
+      rather than here, because the obvious subtraction gets N wrong: 23:00 to 07:00
+      comes out as <b>minus 16 hours</b>. The version that also takes the break off is
+      on the <a href="google-sheets-overnight-shift-hours.html#breaks">night shift
+      hours page</a>.
+    </p>
+  </section>
+
+  <section id="dates">
+    <h2>The date row that fits any month</h2>
+    <p class="section-lede">
+      One cell you type and one formula that does the rest. October gets 31 columns,
+      February 28, and nothing needs editing in between.
+    </p>
+    <p>
+      In <b>Schedule!A1</b>, put any date in the month you are planning, written as a
+      formula rather than typed as 1/10/2026:
+    </p>
+<pre><code>=DATE(2026,10,1)</code></pre>
+    <p>
+      A typed date is read through the sheet's locale, under File, Settings, and
+      1/10/2026 is 1 October in a UK sheet and 10 January in a US one.
+      <code>DATE</code> takes the year, the month and the day in that order
+      everywhere. Then Format, Number, Custom number format, and type
+      <code>mmmm yyyy</code>. The corner of the grid now reads October 2026, and so
+      will the printout.
+    </p>
+    <p>The whole date row is one formula in <b>B1</b>:</p>
+<pre><code>=SEQUENCE(1,DAY(EOMONTH(A1,0)),EOMONTH(A1,-1)+1)</code></pre>
+    <p>
+      Walk it through for October. <code>EOMONTH(A1,0)</code> is the last day of the
+      month, 31 October, and <code>DAY</code> of that is <b>31</b>, the number of
+      columns. <code>EOMONTH(A1,-1)</code> is the last day of September, and one day
+      after it is 1 October, the start. <code>SEQUENCE</code> counts up by one from
+      there, one row deep and 31 columns wide, and fills <b>B1:AF1</b> by itself.
+      Starting from the end of last month rather than from A1 means A1 can hold the
+      19th as happily as the 1st. For February 2027 the same formula stops at
+      <b>AC1</b> and leaves the last three columns empty, and February 2028 gets its
+      29th without being told.
+    </p>
+    <p>
+      If the row shows plain numbers such as 46296, those are the dates underneath, and
+      the next step formats them. Check the row rather than trusting it:
+      <code>=COUNT(B1:AF1)</code> counts real dates and should say <b>31</b> for
+      October, <b>30</b> for November and <b>28</b> for February 2027.
+    </p>
+    <h3>The day name without an extra row</h3>
+    <p>
+      Select <b>B1:AF1</b>, Format, Number, Custom number format, and type
+      <code>ddd d</code>. The cells read Thu 1, Fri 2, Sat 3, and they still hold
+      dates, which is what every formula downstream compares against.
+    </p>
+    <p>The other way is a second header row of day names:</p>
+<pre><code>=ARRAYFORMULA(IF(B1:AF1="","",TEXT(B1:AF1,"ddd")))</code></pre>
+    <p>
+      The <code>IF</code> is not decoration. An empty cell is 0 to Sheets, day 0 is
+      Saturday 30 December 1899, and without it February would end in three columns
+      labelled Sat. The row is the real cost, though. It pushes the first name down to
+      row 3, and every formula on the other guides expects it in row 2. A number
+      format gives you the same word without moving anything, so that is what this
+      page uses.
+    </p>
+    <p>
+      B1 has two limits. It owns <b>B1:AF1</b>, so type something in C1 and B1 shows
+      <code>#REF!</code>, with Array result was not expanded because it would overwrite
+      data in C1. That one you will see. The other you will not: change A1 on a grid
+      that already has shifts in it and the dates move while the codes stay put, so
+      every October shift is suddenly sitting under a November date. The section on
+      <a href="#next">starting the next month</a> has the order that avoids it.
+    </p>
+  </section>
+
+  <section id="names">
+    <h2>Names down the side, and a list that must not move</h2>
+    <p class="section-lede">
+      Pull the names from Staff so the grid and the list cannot disagree. Then decide
+      when the list is allowed to change, because the formula will not decide for you.
+    </p>
+    <p>In <b>A2</b>:</p>
+<pre><code>=FILTER(Staff!A2:A25,Staff!A2:A25&lt;&gt;"")</code></pre>
+    <p>
+      It copies every name on Staff in the same order and skips blank rows, so a list
+      with a gap in it still makes a grid without one. Then View, Freeze, 1 row, and
+      View, Freeze, 1 column. Scroll across to the 28th and the dates and the names
+      stay where you can see them.
+    </p>
+    <h3>Two limits worth knowing before you trust it</h3>
+    <p>
+      The names move and the codes do not. <code>FILTER</code> recalculates every time
+      Staff changes, but the codes in the grid are typed values sitting in fixed cells.
+      Say Staff has eight names and Ben, the third, leaves on 12 October. Delete his
+      row and the five names below him each move up a row, into the shifts that were
+      typed for the person above. Nothing turns red. Every row still has a name and a
+      month of codes. They are just not each other's any more. Sorting Staff into
+      alphabetical order does the same thing to everybody at once.
+    </p>
+    <p>
+      So pick one of two rules and write it in a cell on the Staff sheet where the next
+      person will see it. Either no row is deleted, inserted or sorted while a month is
+      live: leavers stay until the month ends, and new starters go on the first empty
+      row at the bottom, where they move nobody. Or, once the codes are in, select
+      <b>A2:A25</b>, copy it, then Edit, Paste special, Values only, and the names stop
+      following the list. The formula is for building the column, not for keeping it.
+    </p>
+    <p>
+      The second limit is louder. Type anything in a cell below A2 that the list
+      needs, and <code>FILTER</code> refuses to fill it, with the same Array result was not
+      expanded message and the address of the cell you typed in. An error is the good
+      outcome here, because you can see it. A name typed straight into the grid that is
+      not on Staff is the first mistake on the
+      <a href="google-sheets-shift-schedule-mistakes.html#people">seven mistakes
+      page</a>, with a formula that lists every one.
+    </p>
+  </section>
+
+  <section id="codes">
+    <h2>A dropdown of your shift codes</h2>
+    <p class="section-lede">
+      The dropdown saves typing. Whether it also stops a typo depends on one setting,
+      and it sits under Advanced options.
+    </p>
+    <p>
+      Select <b>B2:AF25</b>, then Data, Data validation, Add rule. Under Criteria choose
+      Dropdown (from a range) and give it <code>Shifts!A2:A15</code>. Every cell in the
+      grid now offers M, A and N, and a code added to the Shifts list later turns up in
+      the dropdown without the rule being touched.
+    </p>
+    <h3>Show a warning, or reject the input</h3>
+    <p>
+      Open Advanced options and look at If the data is invalid. Show a warning lets the
+      typo in and marks the cell with a small red corner. You type <code>NN</code>, or
+      <code>N</code> with a space after it, the cell looks fine from across the room,
+      and it is worth zero hours in every total that looks it up. Reject the input
+      refuses anything that is not on the list, and the person typing gets an error
+      instead. For a rota, reject. It has one cost if you roster doubles: M/A is not
+      on the list either, so it is refused too. Add each pair you use to Shifts as a
+      code of its own, with its own start and end, or choose Show a warning and accept
+      that every double gets marked as invalid.
+    </p>
+    <p>
+      One limit no setting fixes. The rule can only refuse a value as it is
+      typed. Rename N to NT on the Shifts sheet halfway through a month and every
+      N already in the grid stays an N, a code that no longer exists and is worth
+      nothing. The red fill on the
+      <a href="google-sheets-shift-schedule-mistakes.html#codes">seven mistakes
+      page</a> catches that and the typo alike, whichever setting you chose. It takes
+      a minute to set up, and it has to be the first rule in the list, for a reason
+      the next section explains.
+    </p>
+  </section>
+
+  <section id="colour">
+    <h2>Weekends shaded, and a colour for each shift</h2>
+    <p class="section-lede">
+      Two kinds of conditional formatting on the same cells. The order of the rules
+      decides which one shows on a Saturday.
+    </p>
+    <h3>Weekends</h3>
+    <p>
+      Select <b>B1:AF25</b>, then Format, Conditional formatting, and under Format cells
+      if choose Custom formula is:
+    </p>
+<pre><code>=AND(B$1&lt;&gt;"",WEEKDAY(B$1,2)&gt;5)</code></pre>
+    <p>
+      Give it a light grey fill. <code>WEEKDAY</code> with a 2 numbers the days from
+      Monday as 1 to Sunday as 7, so anything above 5 is a Saturday or a Sunday. The
+      dollar sign in front of the 1 pins every row to the date row, so the whole column
+      goes grey, not only the header. The <code>AND</code> is there for the same reason
+      as the <code>IF</code> above: an empty column at the end of a short month reads
+      as 0, 0 is a Saturday, and without it February gets three grey columns that are
+      not days at all. October 2026 should show <b>nine</b> grey columns, five
+      Saturdays and four Sundays.
+    </p>
+    <h3>One colour per shift</h3>
+    <p>
+      Add a rule to <b>B2:AF25</b> for each code: Format cells if, Text is exactly, M,
+      and a pale fill. Then the same for A and for N, pale yellow, pale blue and pale
+      purple, say. Pale, because the code has to stay readable on paper.
+    </p>
+    <p>
+      When two rules match one cell, the one higher in the list wins, so drag the
+      weekend rule to the bottom. A Saturday with an M on it then shows in M's colour
+      inside a grey column, and an empty Saturday stays grey. If you added the red
+      fill from the seven mistakes page, drag it to the top, above everything. Below
+      the shift colours, a renamed N still matches N's own rule and stays purple.
+      Below the weekend rule, a typo on a Saturday stays grey. Either way nothing
+      turns red.
+    </p>
+    <p>
+      Every code is its own rule. Eight codes means eight rules, and a code you add to
+      Shifts in March stays white until somebody adds its rule too. A double written as
+      <code>M/A</code> matches none of them and stays white on a weekday, which at least
+      makes doubles stand out. And colour is not a check. A purple N on Saturday 10
+      October and a yellow M on Sunday 11 October look like a tidy weekend, and they
+      leave no rest at all: the night shift ends at 07:00 on Sunday, the moment the
+      morning shift starts.
+    </p>
+  </section>
+
+  <section id="days">
+    <h2>Days worked, people per day, and where the hours come from</h2>
+    <p class="section-lede">
+      Counting days is one formula on this sheet. Counting hours properly takes three
+      pages, and they are linked here rather than squeezed in.
+    </p>
+    <p>Type Days in <b>AG1</b>, then in <b>AG2</b>, dragged down to row 25:</p>
+<pre><code>=IF(A2="","",COUNTIF(B2:AF2,"?*"))</code></pre>
+    <p>
+      The <code>?*</code> means at least one character of text, so every cell with a
+      code in it counts once and a blank day does not. <code>M/A</code> counts as one
+      day, which is right: it is one day with two shifts in it. The <code>IF</code>
+      keeps rows without a name blank instead of showing a column of zeros.
+    </p>
+    <p>
+      It counts anything typed. OFF, HOL and SICK are all days worked as far as this
+      formula knows. Leave days off blank, or if you mark holiday in the grid, take it
+      back off:
+    </p>
+<pre><code>=IF(A2="","",COUNTIF(B2:AF2,"?*")-COUNTIF(B2:AF2,"HOL"))</code></pre>
+    <p>
+      The same idea turned on its side tells you how many people are on each day. In
+      <b>B26</b>, dragged right to AF26:
+    </p>
+<pre><code>=IF(B$1="","",COUNTIF(B2:B25,"?*"))</code></pre>
+    <p>
+      A Saturday with one person on it shows up as a 1 in a row of fours. It counts
+      people with a code, not whether the right shifts are covered, and HOL counts here
+      as well.
+    </p>
+    <h3>Hours take three pages, in this order</h3>
+    <p>
+      Hours need each code turned into a length first. The mirror grid on the
+      <a href="google-sheets-shift-schedule-mistakes.html#hours">seven mistakes
+      page</a> does that with one lookup per row, the month total on that sheet becomes
+      <code>=SUM(B2:AF2)</code>, and a cell with something typed in it that produced 0
+      hours is a typo. If you run nights, the
+      <a href="google-sheets-overnight-shift-hours.html#mod">night shift hours page</a>
+      comes next, because 23:00 to 07:00 is <b>8 hours</b> only once the subtraction is
+      fixed. Then <a href="google-sheets-weekly-overtime-monthly-rota.html#inside">weekly
+      overtime inside the month</a>, because a month total cannot answer a weekly
+      question: 50 hours one week and 30 the next average to 40 and hide
+      <b>10 hours</b> of overtime against a 40 hour week.
+    </p>
+  </section>
+
+  <section id="next">
+    <h2>Printing a month, and starting the next without losing this one</h2>
+    <p class="section-lede">
+      One landscape page. Then a copy for the record before the month cell changes,
+      never after.
+    </p>
+    <h3>Printing</h3>
+    <p>
+      Select <b>A1:AG26</b>, then File, Print, and set Print to Selected cells, Page
+      orientation to Landscape and Scale to Fit to width. Tick Show gridlines under
+      Formatting, because a page of pale fills with no lines between them is hard to
+      read across. A1 prints the month name in the top corner, which is the reason it
+      was given a format.
+    </p>
+    <h3>Starting the next month</h3>
+    <p>
+      First, right-click the Schedule tab, Duplicate, and rename the copy after the
+      month it holds: Schedule 2026-10. That copy is the record. If its names are still
+      a formula, select <b>A2:A25</b> on the copy, copy it, and Paste special, Values only, or
+      next month's changes to Staff will reshuffle this month's rows the way the names
+      section describes.
+    </p>
+    <p>
+      Then, back on Schedule, change A1 to <code>=DATE(2026,11,1)</code>, select
+      <b>B2:AF25</b> and press Delete. Delete clears what was typed and leaves the
+      dropdown, the colours and the weekend shading where they were. If you froze the
+      names as values last month, clear <b>A2:A25</b> and put the <code>FILTER</code>
+      back in A2 before you start typing, so the list is this month's.
+    </p>
+    <p>
+      The live month keeps the name Schedule because every formula on the other guides
+      points at Schedule by name. Old months get dated names and nothing points at
+      them, which is what you want from a record. The order is the point. Change A1
+      first and forget the copy, and October's shifts sit under November's dates with
+      nothing to warn you.
+    </p>
+    <p class="cta-note">
+      November 2026 starts on a Sunday, so the week of Monday 26 October has six days
+      on October's tab and one on November's. That is the week the page on
+      <a href="google-sheets-weekly-overtime-monthly-rota.html#boundary">weekly overtime
+      on a monthly rota</a> is about.
+    </p>
+  </section>
+
+  <section id="stop">
+    <h2>Where a month grid stops</h2>
+    <p class="section-lede">
+      Colour shows you what is on the rota. It does not tell you whether the rota
+      works, and three things stay invisible however carefully you format it.
+    </p>
+    <p>
+      <b>Rest between shifts.</b> An A on Friday 9 October finishes at 23:00 and an M on
+      Saturday 10 October starts at 07:00. That is <b>8 hours</b> between them, three
+      short if your rule is 11. On the grid it is a blue cell next to a yellow one.
+      Nothing about it looks wrong.
+    </p>
+    <p>
+      <b>Two shifts that collide.</b> Two codes in one cell look like a busy day.
+      Whether they overlap depends on their times, and nothing on the grid holds one
+      shift's times up against another's.
+    </p>
+    <p>
+      <b>Long runs.</b> Monday 5 to Thursday 15 October is eleven days without a day
+      off, and on the grid it is eleven ordinary cells in a row. No single cell is
+      wrong. The run is.
+    </p>
+    <p>
+      Formulas get part of the way on all three, and the
+      <a href="google-sheets-shift-schedule-mistakes.html#stop">seven mistakes page</a>
+      takes each as far as it goes: a helper row for runs, mirror grids for rest, and a
+      count of the cells holding a double, which finds the doubles without checking
+      whether they collide. Runs and rest do work. The price is four sheets of
+      scaffolding for the rest check alone, a rest check that still compares a day only
+      with the day before it, and a run count that cannot see last month. If the
+      team is small and the rota stays simple, reading the three off the grid by eye
+      once a week is an honest answer too, as long as it really happens every week.
+    </p>
+    <table>
+      <tr><th>Question</th><th>On this grid</th></tr>
+      <tr><td>Is every day of the month there?</td><td class="yes">SEQUENCE in B1</td></tr>
+      <tr><td>Is that a code you use?</td><td class="yes">Reject the input, plus the red fill</td></tr>
+      <tr><td>Is it a weekend?</td><td class="yes">one conditional format rule</td></tr>
+      <tr><td>Days worked, people per day</td><td class="yes">COUNTIF in AG and row 26</td></tr>
+      <tr><td>Hours and weekly overtime</td><td class="yes">three more pages, linked above</td></tr>
+      <tr><td>Enough rest between shifts?</td><td class="no">four mirror grids, breaks on doubles</td></tr>
+      <tr><td>Two shifts in one cell colliding?</td><td class="no">detectable, not checkable</td></tr>
+      <tr><td>Too many days in a row?</td><td class="no">helper row, blind at month edges</td></tr>
+    </table>
+  </section>
+
+  <section id="addon">
+    <h2>What the add-on does with the same problem</h2>
+    <p class="section-lede">
+      If you would rather not build the grid and keep its rules in order, this is the
+      part ShiftSheet handles in the same spreadsheet.
+    </p>
+    <p>
+      One click draws the month grid with weekends shaded, a colour for each of your
+      shifts and a dropdown of your shift codes in every cell. It does not fill the rota
+      for you: the grid it draws is empty, and the codes are still yours to type. Its
+      dropdown works like Show a warning rather than Reject the input, so a typo still
+      goes in, and what catches it is the Unknown shift code check, one of seven it
+      runs across the whole month:
+    </p>
+    <ul class="checks">
+      <li><b>Unknown shift code</b> <span>anything not on your Shifts sheet</span></li>
+      <li><b>Not on Staff sheet</b> <span>a name in the grid with no row on the staff list</span></li>
+      <li><b>Overlapping shifts</b> <span>two codes in one cell whose hours run into each other</span></li>
+      <li><b>Double booked</b> <span>a shift starting before the previous one has finished</span></li>
+      <li><b>Not enough rest</b> <span>under 11 hours by default, measured from the real finishing time</span></li>
+      <li><b>Over weekly hours</b> <span>over 45 by default, or that person's own limit from the Staff sheet</span></li>
+      <li><b>Too many days in a row</b> <span>more than 6 by default</span></li>
+    </ul>
+    <p style="margin-top:22px">
+      Each of those limits is a number you can change on the Settings sheet. Findings
+      go to a separate Issues sheet, one line per problem with the person, the date and
+      what is wrong, and the check never writes to your grid. The free version also
+      totals hours per person, with overtime hours worked out week by week, and makes a
+      timesheet for one person at a time. There is no weekly view and no clocking in or
+      out: the timesheet comes from the planned grid. Building a new month never erases
+      a grid that already has shifts in it; the old grid is renamed, for example to
+      Schedule 2026-08, and kept.
+    </p>
+    <p>
+      The free version does not expire and is not a trial, and there is no email or
+      card to give us: you only need your Google account to make the copy. It is free
+      for a team of any size, with no sign-up with us, and its script declares one
+      permission: to read and write the one spreadsheet you open it in. Installed from
+      the Marketplace, Google's install screen lists two more, your email address and
+      your basic profile info. The add-on makes no network calls at all. The $39
+      version, paid once, adds pay rates, overtime pay and labour cost, and produces
+      every timesheet in one go. What you get for the money is the full version of the
+      spreadsheet, and it is not a subscription.
+    </p>
+    <p style="margin-top:18px">
+      <a class="cta" href="https://docs.google.com/spreadsheets/d/1UpaCIeLlbo2JyKfwSz12NxLUYkhXdja8AwuMVW-sK90/copy" target="_blank" rel="noopener">Make your own copy, free</a>
+    </p>
+    <p class="cta-note">
+      Also on the <a href="https://workspace.google.com/marketplace/app/shiftsheet_employee_timesheet_shift_sche/898911767169" target="_blank" rel="noopener">Google Workspace Marketplace</a>.
+      Either route runs the same code. The other guides here cover
+      <a href="google-sheets-shift-schedule-mistakes.html">the seven things that go wrong
+      in a shift schedule</a>, <a href="google-sheets-overnight-shift-hours.html">why night
+      shift hours come out negative</a> and
+      <a href="google-sheets-weekly-overtime-monthly-rota.html">weekly overtime on a
+      monthly rota</a>.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <a href="/">Home</a>
+    <a href="privacy.html">Privacy policy</a>
+    <a href="terms.html">Terms of service</a>
+    <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>
+    <p style="margin-top:14px">ShiftSheet is an independent add-on. Google Sheets and Google Workspace are trademarks of Google LLC.</p>
+  </div>
+</footer>
+
+</body>
+</html>
