@@ -297,8 +297,7 @@
       another way, with a red fill on the same range, Format, Conditional formatting,
       Custom formula is:
     </p>
-<pre><code>=AND(B2&lt;&gt;"",SUMPRODUCT(--(COUNTIF(INDIRECT("Shifts!A2:A15"),
-  TRIM(SPLIT(B2,"/")))=0))&gt;0)</code></pre>
+<pre><code>=AND(B2&lt;&gt;"",SUMPRODUCT(--(COUNTIF(INDIRECT("Shifts!A2:A15"),TRIM(SPLIT(B2,"/")))=0))&gt;0)</code></pre>
     <p>
       <code>SPLIT</code> breaks <code>M/A</code> into its codes, and the cell goes red
       if any of them is missing from the Shifts sheet. The <code>INDIRECT</code> is not
@@ -313,8 +312,7 @@
       finds nothing and comes back as 0. This version splits first. In
       <b>Hours!B2</b>, dragged right to <b>AF2</b> and down to row 25:
     </p>
-<pre><code>=IF(Schedule!B2="",0,ARRAYFORMULA(SUM(IFERROR(VLOOKUP(
-  TRIM(SPLIT(Schedule!B2,"/")),Shifts!$A$2:$D$15,4,FALSE),0))))</code></pre>
+<pre><code>=IF(Schedule!B2="",0,ARRAYFORMULA(SUM(IFERROR(VLOOKUP(TRIM(SPLIT(Schedule!B2,"/")),Shifts!$A$2:$D$15,4,FALSE),0))))</code></pre>
     <p>
       Kate works <code>M/A</code> on Saturday 10 October 2026: 7.5 plus 7.5, so
       <b>15 hours</b> from one cell. A night shift goes in the column of the day it
@@ -386,11 +384,9 @@
       overtime that neither sheet shows. October's sheet cannot see September, so the
       honest move is to name the weeks affected. In <b>Totals!J26</b>, dragged to O26:
     </p>
-<pre><code>=IF(J$1&gt;MAX(Hours!$B$1:$AF$1),"",IF(OR(J$1&lt;MIN(Hours!$B$1:$AF$1),
-  J$1+6&gt;MAX(Hours!$B$1:$AF$1)),"partial","whole"))</code></pre>
+<pre><code>=IF(J$1&gt;MAX(Hours!$B$1:$AF$1),"",IF(OR(J$1&lt;MIN(Hours!$B$1:$AF$1),J$1+6&gt;MAX(Hours!$B$1:$AF$1)),"partial","whole"))</code></pre>
     <p>and one line in <b>A27</b> for whoever pays the overtime:</p>
-<pre><code>=ARRAYFORMULA("Check against the next or last month: "&amp;
-  TEXTJOIN(", ",TRUE,IF(J26:O26="partial",TEXT(J1:O1,"d mmm"),"")))</code></pre>
+<pre><code>=ARRAYFORMULA("Check against the next or last month: "&amp;TEXTJOIN(", ",TRUE,IF(J26:O26="partial",TEXT(J1:O1,"d mmm"),"")))</code></pre>
     <p>
       For October it names 28 Sep and 26 Oct. The overtime shown for a partial week is
       a floor, not the answer, and
@@ -400,8 +396,7 @@
 
     <h3>If you also want the month's cost</h3>
     <p>With a rate in <b>Staff!E</b> and 1.5 in <b>H4</b>, in <b>Totals!F2</b>:</p>
-<pre><code>=LET(rate,IFERROR(VLOOKUP($A2,Staff!$A$2:$E$25,5,FALSE),0),
-  C2*rate+D2*rate*$H$4)</code></pre>
+<pre><code>=LET(rate,IFERROR(VLOOKUP($A2,Staff!$A$2:$E$25,5,FALSE),0),C2*rate+D2*rate*$H$4)</code></pre>
     <p>
       Normal hours already leave the overtime out, so the overtime is priced at the
       full 1.5 times and not at an extra half. At $30 an hour Kate costs 145 times 30
@@ -425,16 +420,14 @@
       as <code>mmmm yyyy</code>. Row 4 holds the headings: Date, Day, Code, Shift, Start,
       End, Break (min), Hours. The days the chosen person works go in <b>A5</b>:
     </p>
-<pre><code>=IFERROR(TRANSPOSE(FILTER(Schedule!$B$1:$AF$1,
-  INDEX(Hours!$B$2:$AF$25,MATCH($B$1,Schedule!$A$2:$A$25,0),0)&gt;0)),"")</code></pre>
+<pre><code>=IFERROR(TRANSPOSE(FILTER(Schedule!$B$1:$AF$1,INDEX(Hours!$B$2:$AF$25,MATCH($B$1,Schedule!$A$2:$A$25,0),0)&gt;0)),"")</code></pre>
     <p>
       <code>MATCH</code> finds the person's row, <code>INDEX</code> takes that row of
       hours, <code>FILTER</code> keeps the dates with hours on them and
       <code>TRANSPOSE</code> stands them in a column. <b>B5</b> is
       <code>=IF(A5="","",TEXT(A5,"ddd"))</code>. <b>C5</b> fetches the code:
     </p>
-<pre><code>=IF(A5="","",INDEX(Schedule!$B$2:$AF$25,
-  MATCH($B$1,Schedule!$A$2:$A$25,0),MATCH(A5,Schedule!$B$1:$AF$1,0)))</code></pre>
+<pre><code>=IF(A5="","",INDEX(Schedule!$B$2:$AF$25,MATCH($B$1,Schedule!$A$2:$A$25,0),MATCH(A5,Schedule!$B$1:$AF$1,0)))</code></pre>
     <p>
       Shift, Start, End and Break are one lookup each against the Shifts sheet, and only
       the column number changes: 6, 2, 3 and 5. Start, in <b>E5</b>:
@@ -534,8 +527,7 @@
       page</a> falls back to a default in M2, and column M here holds a week of hours,
       so this version leaves a missing limit blank instead:
     </p>
-<pre><code>=LET(lim,IFERROR(VLOOKUP($A2,Staff!$A$2:$D$25,4,FALSE),0),
-  IF(lim=0,"",lim))</code></pre>
+<pre><code>=LET(lim,IFERROR(VLOOKUP($A2,Staff!$A$2:$D$25,4,FALSE),0),IF(lim=0,"",lim))</code></pre>
     <p>
       Then colour <b>J2:O25</b> with <code>=AND($I2&lt;&gt;"",J2&gt;$I2)</code>. A limit
       is the most someone should work. H1 is where the higher rate starts. Different
