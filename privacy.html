@@ -49,7 +49,7 @@
 <div class="wrap">
 
 <h1>Privacy Policy</h1>
-<p class="updated">Last updated 3 September 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
+<p class="updated">Last updated 5 October 2026 · Applies to the <b>ShiftSheet Employee Timesheet &amp; Shift Schedule</b> Google Sheets add-on</p>
 
 <div class="callout">
   <p><b>The short version.</b> This add-on has no server. It runs inside Google Sheets on
@@ -120,7 +120,7 @@
 <p><b>We do not collect, receive, store or transmit your spreadsheet content.</b> We
    operate no servers, no database, and no analytics.</p>
 
-<p>The add-on saves five small pieces of information using Google's own storage service
+<p>The add-on saves ten small pieces of information using Google's own storage service
    (<code>PropertiesService</code>), which keeps them inside your Google Account and the
    document you are working in. We cannot read any of them, and none of them is ever
    sent anywhere:</p>
@@ -135,6 +135,15 @@
       whether you would leave a review. Stored against your Google Account.</li>
   <li><b>Whether that review question has already been answered</b>, so it is never
       asked a second time. Stored against your Google Account.</li>
+  <li><b>Whether you have entered a licence code</b> — stored as a one-way hash of the
+      code, not the code itself, so the paid features stay on. Stored against your Google Account.</li>
+  <li><b>When your 30 days of Rate and Cost started</b>, so the free month can end on
+      time. Stored against your Google Account.</li>
+  <li><b>Whether your one free "Timesheet for everyone" has been used.</b> Stored
+      against your Google Account.</li>
+  <li><b>Whether the Start here sheet has been shown.</b> Stored in the document.</li>
+  <li><b>Whether a one-time tip about "Timesheet for everyone" has been shown.</b> Stored
+      in the document.</li>
 </ul>
 
 <h2>Outbound requests: none</h2>
@@ -144,9 +153,10 @@
   nothing is sent while you use it, and nothing is sent when you buy the paid version.
 </p>
 <p>
-  The paid version is a separate copy of the template, so there is no key to enter and
-  no check to run. Whether a copy is the free or the paid one is decided by a line in
-  its own code, inside your own Drive.
+  The paid version is unlocked with a licence code. The code is checked inside the
+  add-on, against a list in its own code; it is never sent to us or to anyone else.
+  (Copies of the paid template sold before October 2026 are decided by a line in
+  their own code, as before.)
 </p>
 
 <h2>Google's Limited Use requirements</h2>
@@ -179,6 +189,9 @@
       <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account permissions</a>.</li>
   <li>Everything the add-on wrote into your spreadsheet stays there afterwards as ordinary
       cells, readable without the add-on installed.</li>
+  <li>The items stored against your Google Account (licence hash, trial start, the
+      free-print flag, the review counter) are not removed by deleting the spreadsheet.
+      They hold no schedule, staff or pay data.</li>
 </ul>
 
 <h2>Children</h2>
