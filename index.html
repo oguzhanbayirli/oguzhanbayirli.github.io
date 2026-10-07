@@ -284,7 +284,8 @@
       <div class="card">
         <h3>Overtime is weekly, not monthly</h3>
         <p>Fifty hours one week and thirty the next is ten hours of overtime, not zero.
-           Averaging across the month quietly underpays people.</p>
+           Averaging across the month quietly underpays people. A week split across two
+           months is counted from the days on this month's sheet, and Totals says so.</p>
       </div>
     </div>
   </section>
@@ -330,7 +331,7 @@
         <div class="amount">$39 <span class="per">one payment</span></div>
         <ul>
           <li>Everything in the free version</li>
-          <li>Pay rates, overtime pay and labour cost on the Totals sheet — kept on after the first 30 days</li>
+          <li>Pay rates and labour cost, with overtime at the multiplier you set, on the Totals sheet — kept on after the first 30 days</li>
           <li>Every timesheet printed in one go, every time</li>
         </ul>
         <p style="margin:16px 0 0">
@@ -353,7 +354,7 @@
       <tr><td>People</td><td class="yes">no limit</td><td class="yes">no limit</td></tr>
       <tr><td>Schedule, checks, hours and overtime hours</td><td class="yes">yes</td><td class="yes">yes</td></tr>
       <tr><td>Timesheet for one person</td><td class="yes">yes</td><td class="yes">yes</td></tr>
-      <tr><td>Pay rates, overtime pay, labour cost</td><td class="yes">first 30 days</td><td class="yes">yes</td></tr>
+      <tr><td>Pay rates and labour cost, with overtime at the multiplier you set</td><td class="yes">first 30 days</td><td class="yes">yes</td></tr>
       <tr><td>Every timesheet at once</td><td class="yes">the first one</td><td class="yes">yes</td></tr>
     </table>
   </section>
@@ -367,7 +368,7 @@
       <p>The add-on can read and write only the one spreadsheet you open it in — that is
          what the <code>spreadsheets.currentonly</code> permission means. It cannot see your
          other files, your Drive, your email or your calendar.</p>
-      <p>That is the only permission it asks for, and it makes no network calls at all.
+      <p>That is the only permission its code asks for, and it makes no network calls at all.
          No third party. The licence code is checked inside the spreadsheet and never sent anywhere. No analytics, no tracking.</p>
       <p>Google classes that permission as non-sensitive, so the "Google hasn't verified
          this app" screen should not appear when you open your copy. If you do see it, the
@@ -402,8 +403,8 @@
 
     <details>
       <summary>Does it sync to Google Calendar?</summary>
-      <p>Not yet. Calendar access is a broader permission than this add-on asks for today.
-         It is the first thing on the list once enough people ask for it.</p>
+      <p>No. ShiftSheet does not connect to Google Calendar; it works inside the one
+         spreadsheet you open it in.</p>
     </details>
 
     <details>
