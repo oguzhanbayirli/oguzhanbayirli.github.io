@@ -60,9 +60,14 @@
   <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>.</p>
 
 <h2>What the add-on can access</h2>
-<p>It asks for one Google permission, <code>spreadsheets.currentonly</code>: access to the
-  spreadsheet it is used in, and no other file. It cannot open your other spreadsheets,
-  documents or Drive files, and it does not ask for your e-mail address or profile.</p>
+<p>The add-on's code asks Google for one permission, <code>spreadsheets.currentonly</code>:
+  access to the spreadsheet it is used in, and no other file. It cannot open your other
+  spreadsheets, documents or Drive files.</p>
+<p>If you install it from the Google Workspace Marketplace, Google's install screen lists
+  two more permissions, <code>userinfo.email</code> (your e-mail address) and
+  <code>userinfo.profile</code> (your basic profile). They come from the Marketplace
+  listing configuration, not from the add-on's code. The add-on never reads your e-mail
+  address or your profile and does not use them for anything.</p>
 
 <h2>What it does with the data</h2>
 <p>It reads the ingredient, product, recipe, machine and production rows you enter in that
@@ -83,17 +88,26 @@
 <p>Nothing. The add-on makes no network requests and has no analytics, no tracking and no
   server. The developer does not receive your spreadsheet data, your name or your e-mail
   address.</p>
-<p>One exception: if the add-on hits an unexpected error, Google Apps Script writes a
-  technical error record to the developer's Google Cloud logs. The add-on's own messages
-  are shown to you and are not sent there, but an unexpected error record could contain
-  part of a cell value. These records are used only to fix bugs.</p>
+<p>Error messages are shown to you in the spreadsheet. The add-on does not send error
+  reports to the developer.</p>
 <p>The menu language is chosen from your Google language setting, which Google gives to
   add-ons without a permission.</p>
 
 <h2>Change Log</h2>
-<p>The Change Log sheet records hand edits on the data sheets: the time, the cell, the new
-  value, and the old value when a single cell was edited. It does not record who made the
-  edit. You can delete the sheet or its rows at any time.</p>
+<p>The Change Log sheet is part of your spreadsheet. Every row has the time and what caused
+  it. It records:</p>
+<ul>
+  <li>hand edits on the data sheets (ingredients, products, recipes, machines, machine
+    times, production): the cell and the new value; the old value when a single cell was
+    edited, "(unknown: multi-cell edit)" when several were edited at once;</li>
+  <li>each stock change made by Deduct production: the ingredient, its stock before and
+    after;</li>
+  <li>loading the example data, and clearing all data with the list of cleared sheets;</li>
+  <li>a change of language or currency, with the old and new setting (only when the Change
+    Log sheet already exists).</li>
+</ul>
+<p>It does not record who made a change. You can delete the sheet or its rows at any
+  time.</p>
 
 <h2>Deleting your data</h2>
 <p>Your data is your spreadsheet. Delete rows, sheets or the file itself in Google Sheets,
@@ -128,9 +142,14 @@
   <a href="mailto:support@shiftsheet.me">support@shiftsheet.me</a>.</p>
 
 <h2>Neye erişebilir</h2>
-<p>Tek bir Google izni ister: yalnız eklentiyi kullandığınız tabloyu görmek ve düzenlemek
-  (<code>spreadsheets.currentonly</code>). Diğer tablolarınızı, belgelerinizi ya da Drive
-  dosyalarınızı açamaz; e-posta adresinizi ve profilinizi istemez.</p>
+<p>Eklentinin kodu Google'dan tek bir izin ister: yalnız eklentiyi kullandığınız tabloyu
+  görmek ve düzenlemek (<code>spreadsheets.currentonly</code>). Diğer tablolarınızı,
+  belgelerinizi ya da Drive dosyalarınızı açamaz.</p>
+<p>Google Workspace Marketplace'ten kurarsanız Google'ın kurulum ekranı iki izin daha
+  gösterir: <code>userinfo.email</code> (e-posta adresiniz) ve <code>userinfo.profile</code>
+  (temel profil bilgileriniz). Bu ikisi eklentinin kodundan değil, Marketplace ilanının
+  yapılandırmasından gelir. Eklenti e-posta adresinizi ya da profilinizi hiç okumaz ve hiçbir
+  şey için kullanmaz.</p>
 
 <h2>Veriyle ne yapar</h2>
 <p>O tabloya girdiğiniz malzeme, ürün, reçete, makine ve üretim satırlarını okur, sonuçları
@@ -148,16 +167,25 @@
 <h2>Ne gönderir</h2>
 <p>Hiçbir şey. Eklenti ağ isteği yapmaz; analiz, izleme ya da sunucu yoktur. Geliştirici
   tablonuzdaki veriyi, adınızı ya da e-posta adresinizi almaz.</p>
-<p>Tek istisna: eklenti beklenmeyen bir hatayla karşılaşırsa Google Apps Script
-  geliştiricinin Google Cloud günlüğüne teknik bir hata kaydı yazar. Eklentinin kendi
-  mesajları size gösterilir, oraya gönderilmez; ama beklenmeyen bir hata kaydında bir hücre
-  değerinin bir kısmı bulunabilir. Bu kayıtlar yalnız hataları düzeltmek için kullanılır.</p>
+<p>Hata mesajları size tabloda gösterilir. Eklenti geliştiriciye hata raporu göndermez.</p>
 <p>Menü dili, Google'ın eklentilere izin gerektirmeden verdiği dil ayarınızdan seçilir.</p>
 
 <h2>Değişiklik Kaydı</h2>
-<p>Değişiklik Kaydı sayfası veri sayfalarında elle yapılan düzenlemeleri yazar: zamanı,
-  hücreyi, yeni değeri ve tek hücre düzenlendiyse eski değeri. Kimin düzenlediğini yazmaz.
-  Sayfayı ya da satırlarını istediğiniz an silebilirsiniz.</p>
+<p>Değişiklik Kaydı sayfası tablonuzun bir parçasıdır. Her satırda zaman ve değişikliğin
+  kaynağı yazar. Şunları kaydeder:</p>
+<ul>
+  <li>veri sayfalarında (malzemeler, ürünler, reçeteler, makineler, makine süreleri, üretim)
+    elle yapılan düzenlemeler: hücre ve yeni değer; tek hücre düzenlendiyse eski değer,
+    birden çok hücre birlikte düzenlendiyse "(bilinmiyor: çoklu hücre düzenlemesi)";</li>
+  <li>Üretimi stoktan düş'ün yaptığı her stok değişikliği: malzeme, önceki ve sonraki
+    stok;</li>
+  <li>örnek verinin yüklenmesi ve tüm verinin temizlenmesi (temizlenen sayfaların
+    listesiyle);</li>
+  <li>dil ya da para birimi değişikliği, eski ve yeni ayarla (yalnız Değişiklik Kaydı sayfası
+    zaten varsa).</li>
+</ul>
+<p>Değişikliği kimin yaptığını yazmaz. Sayfayı ya da satırlarını istediğiniz an
+  silebilirsiniz.</p>
 
 <h2>Verinizi silmek</h2>
 <p>Veriniz tablonuzdur. Satırları, sayfaları ya da dosyanın kendisini E-Tablolar'da silin
